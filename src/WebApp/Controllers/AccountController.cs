@@ -41,6 +41,7 @@ namespace WebApp.Controllers
             _applicationDbContext = applicationDbContext;
         }
 
+        /*
         //
         // GET: /Account/Login
         [HttpGet]
@@ -49,7 +50,7 @@ namespace WebApp.Controllers
         {
             ViewData["ReturnUrl"] = returnUrl;
             return View();
-        }
+        }*/
 
         //
         // POST: /Account/Login
@@ -89,6 +90,7 @@ namespace WebApp.Controllers
             return View(model);
         }
 
+        /*
         //
         // GET: /Account/Register
         [HttpGet]
@@ -96,7 +98,7 @@ namespace WebApp.Controllers
         public IActionResult Register()
         {
             return View();
-        }
+        }*/
 
         //
         // POST: /Account/Register

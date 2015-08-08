@@ -20,7 +20,7 @@ var loginStore = Reflux.createStore({
         }).complete(function() {
            console.debug("done complete!");
         }).error(function(XMLHttpRequest, textStatus, errorThrown){
-           console.debug("textStatus = " + textStatus + "errorThrown = " + errorThrown);
+            console.debug("textStatus = " + textStatus + "errorThrown = " + errorThrown +  "response = " + XMLHttpRequest.responseText);
         });
     }
 });
