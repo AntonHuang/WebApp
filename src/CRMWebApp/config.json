@@ -1,0 +1,10 @@
+{
+  "AppSettings": {
+    "SiteTitle": "CRMWebApp"
+  },
+  "Data": {
+    "DefaultConnection": {
+      "ConnectionString": "Server=(localdb)\\mssqllocaldb;Database=aspnet5-CRMWebApp-652af491-5fff-4f98-a321-79001131cf8f;Trusted_Connection=True;MultipleActiveResultSets=true"
+    }
+  }
+}
