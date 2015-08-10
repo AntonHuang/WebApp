@@ -8,19 +8,7 @@ var registerStore = Reflux.createStore({
         this.listenTo(Actions.register, this.register);
     },
 
-    register: function (userName, userPassword, confirmPS) {
-        var requestData = { Email: userName, Password: userPassword, ConfirmPassword: confirmPS };
-        $.ajaxAntiForgery({
-            type: "POST",
-            url: "/Account/Register",
-            data: requestData,
-            dataType: "json"
-        }).success(function () {
-            console.debug("done");
-        }).error(function () {
-            console.debug("error");
-        });
-    }
+   
 });
 
 

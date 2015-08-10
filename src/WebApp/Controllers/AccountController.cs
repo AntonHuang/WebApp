@@ -17,7 +17,7 @@ using System.Net;
 
 namespace WebApp.Controllers
 {
-    [Authorize]
+    [Authorize()]
     public class AccountController : Controller
     {
         private readonly UserManager<ApplicationUser> _userManager;
@@ -39,6 +39,13 @@ namespace WebApp.Controllers
             _emailSender = emailSender;
             _smsSender = smsSender;
             _applicationDbContext = applicationDbContext;
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> UserInfo() {
+            EnsureDatabaseCreated(_applicationDbContext);
+            ApplicationUser user = await GetCurrentUserAsync();
+            return new JsonResult(user);
         }
 
         /*
@@ -69,7 +76,8 @@ namespace WebApp.Controllers
                 if (result.Succeeded)
                 {
                     //return RedirectToLocal(returnUrl);
-                    return new JsonResult("OK");
+                    ApplicationUser user = await GetCurrentUserAsync();
+                    return new JsonResult(user);
                 }
                 if (result.RequiresTwoFactor)
                 {

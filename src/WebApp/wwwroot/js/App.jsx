@@ -15,8 +15,13 @@ var ReactRouterBootstrap = require('react-router-bootstrap')
   , ListGroupItemLink = ReactRouterBootstrap.ListGroupItemLink;
 
 
-require("./store/loginStore.js");
-require("./store/registerStore.js");
+var RouterStore = require('./RouterStore');
+var Actions =  require("./Actions.js");
+
+var AccountStore = require("./store/Account.js");
+//require("./store/loginStore.js");
+//require("./store/registerStore.js");
+var UserInfo = require("./UserInfo.jsx");
 var Login = require("./login.jsx");
 var Register = require("./register.jsx");
 var ForgotPassword = require("./forgotPassword.jsx");
@@ -79,6 +84,24 @@ var routes = (
   </Route>
 );
 
-Router.run(routes, function (Handler) {
+var AppRouter = Router.create({
+    routes: routes
+    //,location: Router.HistoryLocation
+});
+
+RouterStore.set(AppRouter);
+
+
+React.render(<UserInfo />, document.getElementById("UserInfo"));
+
+AppRouter.run(function (Handler) {
     React.render(<Handler />, document.getElementById("app_main"));
 });
+
+
+if (AccountStore.getCurrentUser().Name == "") {
+    Actions.retrieveUserInfo();
+}
+
+
+

@@ -3,6 +3,9 @@ var $ = require("jquery");
 require("../jquerytoken.js");
 var Actions = require("../Actions.js");
 
+var RouterStore = require('../RouterStore');
+
+
 var loginStore = Reflux.createStore({
     init: function () {
         this.listenTo(Actions.doLogin, this.login);
@@ -16,7 +19,8 @@ var loginStore = Reflux.createStore({
             data: requestData,
             dataType: "json"
         }).success(function() {
-           console.debug("done!");
+            console.debug("done!");
+            RouterStore.get().transitionTo("/",);
         }).complete(function() {
            console.debug("done complete!");
         }).error(function(XMLHttpRequest, textStatus, errorThrown){

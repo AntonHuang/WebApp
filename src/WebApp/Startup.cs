@@ -23,6 +23,7 @@ using Microsoft.Framework.Runtime;
 using WebApp.Models;
 using WebApp.Services;
 using React.AspNet;
+using Microsoft.AspNet.Authentication.Cookies;
 
 namespace WebApp
 {
@@ -77,8 +78,26 @@ namespace WebApp
                 options.ClientSecret = Configuration["Authentication:MicrosoftAccount:ClientSecret"];
             });
 
+            services.ConfigureCookieAuthentication(options => {
+                CookieAuthenticationNotifications cookieAuthN = options.Notifications as CookieAuthenticationNotifications;
+                if (cookieAuthN == null)
+                {
+                    cookieAuthN = new CookieAuthenticationNotifications();
+                    options.Notifications = cookieAuthN;
+                }
+
+                cookieAuthN.OnApplyRedirect = ctx =>
+                {
+                    if (IsAjaxRequest(ctx.Request) == false)
+                    {
+                        ctx.Response.Redirect(ctx.RedirectUri);
+                    }
+                };
+            });
+
             // Add MVC services to the services container.
             services.AddMvc();
+
 
             // Uncomment the following line to add Web API services which makes it easier to port Web API 2 controllers.
             // You will also need to add the Microsoft.AspNet.Mvc.WebApiCompatShim package to the 'dependencies' section of project.json.
@@ -130,6 +149,7 @@ namespace WebApp
 
             // Add cookie-based authentication to the request pipeline.
             app.UseIdentity();
+            
 
             // Add authentication middleware to the request pipeline. You can configure options such as Id and Secret in the ConfigureServices method.
             // For more information see http://go.microsoft.com/fwlink/?LinkID=532715
@@ -149,5 +169,20 @@ namespace WebApp
                 // routes.MapWebApiRoute("DefaultApi", "api/{controller}/{id?}");
             });
         }
+
+        private static bool IsAjaxRequest(HttpRequest request)
+        {
+            IReadableStringCollection query = request.Query;
+            if ((query != null) && (query["X-Requested-With"] == "XMLHttpRequest"))
+            {
+                return true;
+            }
+            IHeaderDictionary headers = request.Headers;
+            return ((headers != null) && (headers["X-Requested-With"] == "XMLHttpRequest"));
+        }
     }
+
+
+
+
 }
