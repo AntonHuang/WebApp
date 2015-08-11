@@ -8,4 +8,3 @@
 /// <reference path="js/store/account.js" />
 /// <reference path="js/store/loginStore.js" />
 /// <reference path="js/store/registerstore.js" />
-/// <reference path="js/userinfo.js" />

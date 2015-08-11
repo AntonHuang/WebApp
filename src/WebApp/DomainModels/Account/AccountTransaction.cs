@@ -8,33 +8,33 @@ namespace WebApp.DomainModels.Account
     /**
       <<moment-interval>>
     */
-    public class AccontTransaction
+    public class AccountTransaction
     {
         public string ID { get; set; }
         public string Type { get; set; }
         public string Status { get; set; }
-        public ICollection<AccontTransactionDetail> Items { get; set; }
+        public ICollection<AccountTransactionDetail> DetailItems { get; set; }
 
         public void Transaction(Account fromAccount, Account toAccount, Amount amount) {
 
-            AccontTransactionDetail fromDetial = new AccontTransactionDetail()
+            AccountTransactionDetail fromDetial = new AccountTransactionDetail()
             {
-                transaction = this,
-                account = fromAccount,
-                qty = -amount,
-                description = "Transaction From"
+                Transaction = this,
+                Account = fromAccount,
+                Quantity = -amount,
+                Description = "Transaction From"
             };
 
-            AccontTransactionDetail toDetial = new AccontTransactionDetail()
+            AccountTransactionDetail toDetial = new AccountTransactionDetail()
             {
-                transaction = this,
-                account = toAccount,
-                qty = amount,
-                description = "Transaction To"
+                Transaction = this,
+                Account = toAccount,
+                Quantity = amount,
+                Description = "Transaction To"
             };
 
-            Items.Add(fromDetial);
-            Items.Add(toDetial);
+            DetailItems.Add(fromDetial);
+            DetailItems.Add(toDetial);
 
             fromDetial.ApplyTransaction();
             toDetial.ApplyTransaction();
@@ -44,25 +44,25 @@ namespace WebApp.DomainModels.Account
     /**
       <<moment-interval>>
     */
-    public class AccontTransactionDetail
+    public class AccountTransactionDetail
     {
-        public AccontTransaction transaction;
-        public Account account; 
-        public Amount qty;
-        public AmountExchangeRate rate;
-        public string description;
+        public AccountTransaction Transaction { get; set; }
+        public Account Account { get; set; }
+        public Amount Quantity { get; set; }
+        public AmountExchangeRate Rate { get; set; }
+        public string Description { get; set; }
         
 
         public void ApplyTransaction() {
-            rate = RateService.GetExchangeRate(qty, account.GetAmountForExchangeParse());
-            account.modifyAmount(rate.GetAmount(qty));
+            Rate = RateService.GetExchangeRate(Quantity, Account.GetAmountForExchangeParse());
+            Account.modifyAmount(Rate.GetAmount(Quantity));
         }
     }
 
     public class AmountExchangeRate {
-        public Amount From;
-        public Amount To;
-        public decimal Rate;
+        public Amount From { get; set; }
+        public Amount To { get; set; }
+        public decimal Rate { get; set; }
 
         public Amount GetAmount(Amount qty)
         {

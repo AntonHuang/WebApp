@@ -20,7 +20,7 @@ var loginStore = Reflux.createStore({
             dataType: "json"
         }).success(function() {
             console.debug("done!");
-            RouterStore.get().transitionTo("/",);
+            RouterStore.get().transitionTo("/");
         }).complete(function() {
            console.debug("done complete!");
         }).error(function(XMLHttpRequest, textStatus, errorThrown){

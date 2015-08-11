@@ -7,11 +7,11 @@ using WebApp.Models;
 namespace WebApp.Migrations
 {
     [ContextType(typeof(ApplicationDbContext))]
-    partial class MyFirstMigration
+    partial class Init
     {
         public override string Id
         {
-            get { return "20150809050514_MyFirstMigration"; }
+            get { return "20150811150631_Init"; }
         }
         
         public override string ProductVersion
@@ -108,23 +108,32 @@ namespace WebApp.Migrations
                     b.Property<string>("MemberID")
                         .GenerateValueOnAdd();
                     
-                    b.Property<string>("ReferenceMemberID");
+                    b.Property<string>("Address");
                     
-                    b.Property<DateTime>("RegisterTime");
+                    b.Property<DateTime>("LastModifyDate");
+                    
+                    b.Property<string>("Level");
+                    
+                    b.Property<string>("MemberMemberID");
+                    
+                    b.Property<string>("Name");
+                    
+                    b.Property<DateTime>("RegisterDate");
                     
                     b.Property<string>("TransactionPassword");
-                    
-                    b.Property<string>("Type");
                     
                     b.Key("MemberID");
                 });
             
             builder.Entity("WebApp.Models.ApplicationUser", b =>
                 {
-                    b.Property<string>("Id")
-                        .GenerateValueOnAdd();
+                    b.Property<string>("Id");
                     
                     b.Property<int>("AccessFailedCount");
+                    
+                    b.Property<bool>("ChangedPassword")
+                        .Annotation("Relational:ColumnDefaultValue", "0")
+                        .Annotation("Relational:ColumnDefaultValueType", "System.Int32");
                     
                     b.Property<string>("ConcurrencyStamp")
                         .ConcurrencyToken();
@@ -136,8 +145,6 @@ namespace WebApp.Migrations
                     b.Property<bool>("LockoutEnabled");
                     
                     b.Property<DateTimeOffset?>("LockoutEnd");
-                    
-                    b.Property<string>("MemberInfoMemberID");
                     
                     b.Property<string>("NormalizedEmail");
                     
@@ -196,14 +203,14 @@ namespace WebApp.Migrations
                 {
                     b.Reference("WebApp.DomainModels.Member.Member")
                         .InverseCollection()
-                        .ForeignKey("ReferenceMemberID");
+                        .ForeignKey("MemberMemberID");
                 });
             
             builder.Entity("WebApp.Models.ApplicationUser", b =>
                 {
                     b.Reference("WebApp.DomainModels.Member.Member")
-                        .InverseCollection()
-                        .ForeignKey("MemberInfoMemberID");
+                        .InverseReference()
+                        .ForeignKey("WebApp.Models.ApplicationUser", "Id");
                 });
         }
     }

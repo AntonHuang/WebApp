@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace WebApp.DomainModels.Account
+namespace WebApp.DomainModels
 {
     public class Amount
     {

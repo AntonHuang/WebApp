@@ -5,7 +5,7 @@ using Microsoft.Data.Entity.Relational.Migrations.Operations;
 
 namespace WebApp.Migrations
 {
-    public partial class MyFirstMigration : Migration
+    public partial class Init : Migration
     {
         public override void Up(MigrationBuilder migration)
         {
@@ -14,37 +14,41 @@ namespace WebApp.Migrations
                 columns: table => new
                 {
                     MemberID = table.Column(type: "nvarchar(450)", nullable: false),
-                    ReferenceMemberID = table.Column(type: "nvarchar(450)", nullable: true),
-                    RegisterTime = table.Column(type: "datetime2", nullable: false),
-                    TransactionPassword = table.Column(type: "nvarchar(max)", nullable: true),
-                    Type = table.Column(type: "nvarchar(max)", nullable: true)
+                    Address = table.Column(type: "nvarchar(max)", nullable: true),
+                    LastModifyDate = table.Column(type: "datetime2", nullable: false),
+                    Level = table.Column(type: "nvarchar(max)", nullable: true),
+                    MemberMemberID = table.Column(type: "nvarchar(450)", nullable: true),
+                    Name = table.Column(type: "nvarchar(max)", nullable: true),
+                    RegisterDate = table.Column(type: "datetime2", nullable: false),
+                    TransactionPassword = table.Column(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Member", x => x.MemberID);
                     table.ForeignKey(
-                        name: "FK_Member_Member_ReferenceMemberID",
-                        columns: x => x.ReferenceMemberID,
+                        name: "FK_Member_Member_MemberMemberID",
+                        columns: x => x.MemberMemberID,
                         referencedTable: "Member",
                         referencedColumn: "MemberID");
                 });
             migration.AddColumn(
-                name: "MemberInfoMemberID",
+                name: "ChangedPassword",
                 table: "AspNetUsers",
-                type: "nvarchar(450)",
-                nullable: true);
+                type: "bit",
+                nullable: false,
+                defaultValue: 0);
             migration.AddForeignKey(
-                name: "FK_ApplicationUser_Member_MemberInfoMemberID",
+                name: "FK_ApplicationUser_Member_Id",
                 table: "AspNetUsers",
-                column: "MemberInfoMemberID",
+                column: "Id",
                 referencedTable: "Member",
                 referencedColumn: "MemberID");
         }
         
         public override void Down(MigrationBuilder migration)
         {
-            migration.DropForeignKey(name: "FK_ApplicationUser_Member_MemberInfoMemberID", table: "AspNetUsers");
-            migration.DropColumn(name: "MemberInfoMemberID", table: "AspNetUsers");
+            migration.DropForeignKey(name: "FK_ApplicationUser_Member_Id", table: "AspNetUsers");
+            migration.DropColumn(name: "ChangedPassword", table: "AspNetUsers");
             migration.DropTable("Member");
         }
     }
