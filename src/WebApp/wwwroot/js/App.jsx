@@ -24,7 +24,7 @@ var AccountStore = require("./store/Account.js");
 var UserInfo = require("./UserInfo.jsx");
 var Login = require("./login.jsx");
 var Register = require("./register.jsx");
-var ForgotPassword = require("./forgotPassword.jsx");
+var ChangePassword = require("./changePassword.jsx");
 
 var App = React.createClass({
     render: function () {
@@ -42,6 +42,8 @@ var Account = React.createClass({
     }
 });
 
+var Home = require("./home.jsx");
+/*
 var Home = React.createClass({
     render: function () {
        return (
@@ -62,6 +64,37 @@ var Home = React.createClass({
           </div>
         );
     }
+});*/
+
+var Manage = React.createClass({
+    render: function () {
+        return (
+           <div className="row">
+             <div className="col-md-3">
+                 <ListGroup>
+                     <ListGroupItemLink to="addMember">
+                         添加会员信息
+                     </ListGroupItemLink>
+                     <ListGroupItemLink to="updateMember">
+                         修改会员信息
+                     </ListGroupItemLink>
+                     <ListGroupItemLink to="addMattress">
+                         添加床垫信息
+                     </ListGroupItemLink>
+                     <ListGroupItemLink to="pointExch">
+                         积分兑换
+                     </ListGroupItemLink>
+                     <ListGroupItemLink to="pointRule">
+                         积分规则
+                     </ListGroupItemLink>
+                </ListGroup>
+            </div>
+            <div className="col-md-9">
+              <RouteHandler />
+            </div>
+          </div>
+    );
+}
 });
 
 var Destination = React.createClass({
@@ -70,17 +103,24 @@ var Destination = React.createClass({
     }
 });
 
+var AddMember = require("./addMember.jsx");
+var UpdateMember = require("./updateMember.jsx");
+
 var routes = (
   <Route handler={App} path="/">
     <Route handler={Account} path="account">
       <Route name="login" path="login" handler={Login} />
       <Route name="register" path="register" handler={Register} />
-      <Route name="forgotPassword" path="forgotpassword" handler={ForgotPassword} />
+      <Route name="changePassword" path="changePassword" handler={ChangePassword} />
     </Route>
-    <Route handler={Home} >
-       <Route name="destination" path="destination/:someparam" handler={Destination} />
+    <Route handler={Home} name="home" />
+    <Route handler={Manage} name="manage">
+       <Route name="addMember" path="addMember" handler={AddMember} />
+       <Route name="updateMember" path="updateMember" handler={UpdateMember} />
+       <Route name="addMattress" path="addMattress" handler={Destination} />
+       <Route name="pointExch" path="pointExch" handler={Destination} />
+       <Route name="pointRule" path="pointRule" handler={Destination} />
     </Route>
-    <DefaultRoute handler={Home} />
   </Route>
 );
 
@@ -91,15 +131,14 @@ var AppRouter = Router.create({
 
 RouterStore.set(AppRouter);
 
-
 React.render(<UserInfo />, document.getElementById("UserInfo"));
+var user = AccountStore.getCurrentUser();
 
 AppRouter.run(function (Handler) {
     React.render(<Handler />, document.getElementById("app_main"));
 });
 
-
-if (AccountStore.getCurrentUser().Name == "") {
+if (!user || !user.ID) {
     Actions.retrieveUserInfo();
 }
 

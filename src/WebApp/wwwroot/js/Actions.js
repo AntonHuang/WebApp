@@ -3,7 +3,22 @@
 var Actions = Reflux.createActions([
     "retrieveUserInfo",
     "doLogin",
-    "register"
+    "doLogout",
+    "loadedUserInfo",
+    "changePassword",
+    "changePasswordDone",
+    "changePasswordFail",
+    "nextAccountID",
+    "nextAccountIDDone",
+    "nextAccountIDFail",
+    "modifyMember",
+    "modifyMemberDone",
+    "modifyMemberFail",
+    "register",
+
+    "findMember",
+    "findMemberDone",
+    "findMemberFail"
 ]);
 
 if (typeof exports === "object" && typeof module !== "undefined") {

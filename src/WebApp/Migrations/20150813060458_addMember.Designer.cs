@@ -7,9 +7,19 @@ using WebApp.Models;
 namespace WebApp.Migrations
 {
     [ContextType(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    partial class addMember
     {
-        public override void BuildModel(ModelBuilder builder)
+        public override string Id
+        {
+            get { return "20150813060458_addMember"; }
+        }
+        
+        public override string ProductVersion
+        {
+            get { return "7.0.0-beta5-13549"; }
+        }
+        
+        public override void BuildTargetModel(ModelBuilder builder)
         {
             builder
                 .Annotation("SqlServer:ValueGeneration", "Identity");

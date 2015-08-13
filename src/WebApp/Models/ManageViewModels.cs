@@ -6,6 +6,7 @@ using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNet.Http.Authentication;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Mvc.Rendering;
+using WebApp.Common;
 
 namespace WebApp.Models
 {
@@ -57,6 +58,7 @@ namespace WebApp.Models
 
         [Required]
         [StringLength(100, ErrorMessage = "The {0} must be at least {2} characters long.", MinimumLength = 6)]
+        [NotEqualToAttribute("OldPassword",  ErrorMessage = "The {0} can not be same with {1}.")]
         [DataType(DataType.Password)]
         [Display(Name = "New password")]
         public string NewPassword { get; set; }

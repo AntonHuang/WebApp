@@ -84,19 +84,37 @@ namespace WebApp.Models
     public class RegisterViewModel
     {
         [Required]
-        [EmailAddress]
-        [Display(Name = "Email")]
-        public string UserID { get; set; }
+        public string AccountID { get; set; }
 
-        [Required]
-        [StringLength(100, ErrorMessage = "The {0} must be at least {2} characters long.", MinimumLength = 6)]
-        [DataType(DataType.Password)]
-        [Display(Name = "Password")]
-        public string Password { get; set; }
+        public string ReferenceID { get; set; }
+        public string Name { get; set; }
+        public string CardID { get; set; }
+        public string Address { get; set; }
+        public string Phone { get; set; }
+        public string Level { get; set; }
+    }
 
-        [DataType(DataType.Password)]
-        [Display(Name = "Confirm password")]
-        [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
-        public string ConfirmPassword { get; set; }
+    public class FindMemberViewModel
+    {
+        public string MemberID { get; set; }
+        public string ReferenceID { get; set; }
+        public string Name { get; set; }
+        public string IDCard { get; set; }
+        public string Phone { get; set; }
+
+        public int page { get; set; }
+        public int PageSize { get; set; }
+    }
+
+    public class MemberInfoModel
+    {
+        public string MemberID { get; set; }
+        public string ReferenceID { get; set; }
+        public string Name { get; set; }
+        public string IDCard { get; set; }
+        public string Phone { get; set; }
+
+        public string Address { get; set; }
+        public string Level { get; set; }
     }
 }

@@ -60,8 +60,18 @@ namespace WebApp
 
             // Add Identity services to the services container.
             services.AddIdentity<ApplicationUser, IdentityRole>()
-                .AddEntityFrameworkStores<ApplicationDbContext>()
-                .AddDefaultTokenProviders();
+                .AddEntityFrameworkStores<ApplicationDbContext>();
+
+            services.ConfigureIdentity(conf => {
+                conf.Password.RequiredLength = 6;
+                conf.Password.RequireLowercase = false;
+                conf.Password.RequireDigit = false;
+                conf.Password.RequireNonLetterOrDigit = false;
+                conf.Password.RequireUppercase = false;
+
+                conf.User.UserNameValidationRegex = null;
+            });
+
 
             // Configure the options for the authentication middleware.
             // You can add options for Google, Twitter and other middleware as shown below.
@@ -117,6 +127,8 @@ namespace WebApp
             loggerFactory.MinimumLevel = LogLevel.Information;
             loggerFactory.AddConsole();
 
+           
+
             // Configure the HTTP request pipeline.
 
             // Add the following to the request pipeline only in development environment.
@@ -149,7 +161,7 @@ namespace WebApp
 
             // Add cookie-based authentication to the request pipeline.
             app.UseIdentity();
-            
+
 
             // Add authentication middleware to the request pipeline. You can configure options such as Id and Secret in the ConfigureServices method.
             // For more information see http://go.microsoft.com/fwlink/?LinkID=532715
@@ -168,6 +180,11 @@ namespace WebApp
                 // Uncomment the following line to add a route for porting Web API 2 controllers.
                 // routes.MapWebApiRoute("DefaultApi", "api/{controller}/{id?}");
             });
+
+
+            // Add Initialization  Data
+            ActivatorUtilities.CreateInstance<DBInitData>(app.ApplicationServices)
+                .InitializeData();
         }
 
         private static bool IsAjaxRequest(HttpRequest request)

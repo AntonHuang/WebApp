@@ -31,14 +31,14 @@ var login = React.createClass({
                         <hr />
                         <div className="text-danger"></div>
                         <div className="form-group">
-                            <label className="col-md-2 control-label" for="AccountID">帐号</label>
+                            <label className="col-md-2 control-label" htmlFor="AccountID">帐号</label>
                             <div className="col-md-10">
                                 <input className="form-control" id="AccountID" ref="AccountID" type="text" />
                                 <span className="text-danger"></span>
                             </div>
                         </div>
                         <div className="form-group">
-                            <label className="col-md-2 control-label" for="Password">密码</label>
+                            <label className="col-md-2 control-label" htmlFor="Password">密码</label>
                             <div className="col-md-10">
                                 <input className="form-control" id="Password" ref="Password" type="password" />
                                 <span asp-validation-for="Password" className="text-danger"></span>
@@ -58,12 +58,6 @@ var login = React.createClass({
                                 <button type="submit" className="btn btn-default">登录</button>
                             </div>
                         </div>
-                        <p>
-                            <Link to="register">注册新用户?</Link>
-                        </p>
-                        <p>
-                             <Link to="forgotPassword">忘记密码?</Link>
-                        </p>
                   </form>
                </section>
             </div>

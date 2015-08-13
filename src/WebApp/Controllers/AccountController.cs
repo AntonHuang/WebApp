@@ -14,6 +14,8 @@ using WebApp;
 using WebApp.Models;
 using WebApp.Services;
 using System.Net;
+using Microsoft.AspNet.Identity.EntityFramework;
+using WebApp.DomainModels.Member;
 
 namespace WebApp.Controllers
 {
@@ -25,7 +27,8 @@ namespace WebApp.Controllers
         private readonly IEmailSender _emailSender;
         private readonly ISmsSender _smsSender;
         private readonly ApplicationDbContext _applicationDbContext;
-        private static bool _databaseChecked;
+
+        //private static bool _databaseChecked;
 
         public AccountController(
             UserManager<ApplicationUser> userManager,
@@ -45,7 +48,66 @@ namespace WebApp.Controllers
         public async Task<IActionResult> UserInfo() {
             EnsureDatabaseCreated(_applicationDbContext);
             ApplicationUser user = await GetCurrentUserAsync();
-            return new JsonResult(user);
+            return await GetUserInfo(user);
+        }
+
+        private async Task<IActionResult> GetUserInfo(ApplicationUser user) {
+            try
+            {
+                if (user == null)
+                {
+                    return HttpNotFound();
+                }
+
+                var role = (await _userManager.GetRolesAsync(user)).FirstOrDefault();
+
+                if (user.MemberInfo == null)
+                {
+                    var menber = (from member in this._applicationDbContext.Members
+                                  where member.MemberID.Equals(user.UserName)
+                                  select new
+                                  {
+                                      ID = member.MemberID,
+                                      Name = member.Name ?? "",
+                                      Level = GetLevelDisplayName(member.Level),
+                                      Role = role ?? "",
+                                      RegisterDate = member.RegisterDate,
+                                      NeedToChangePassword = user.ChangedPassword == false
+                                  }).FirstOrDefault();
+                    if (menber == null)
+                    {
+                        return HttpNotFound();
+                    }
+                    return new JsonResult(menber);
+                }
+                else
+                {
+                    return new JsonResult(new
+                    {
+                        ID = user.MemberInfo.MemberID,
+                        Name = user.MemberInfo.Name ?? "",
+                        Level = GetLevelDisplayName(user.MemberInfo.Level),
+                        Role = role ?? "",
+                        RegisterDate = user.MemberInfo.RegisterDate,
+                        NeedToChangePassword = user.ChangedPassword == false
+                    });
+                }
+            }
+            catch (Exception e) {
+                return new JsonResult(new
+                {
+                    Message = e.Message
+                });
+            }
+        }
+
+        private string GetLevelDisplayName(string level)
+        {
+            if ("Level1".Equals(level, StringComparison.InvariantCultureIgnoreCase)){
+                return "高级会员";
+            } else {
+                return "普通会员";
+            }
         }
 
         /*
@@ -63,7 +125,7 @@ namespace WebApp.Controllers
         // POST: /Account/Login
         [HttpPost]
         [AllowAnonymous]
-        [ValidateAntiForgeryToken]
+        //[ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginViewModel model, string returnUrl = null)
         {
             EnsureDatabaseCreated(_applicationDbContext);
@@ -76,8 +138,8 @@ namespace WebApp.Controllers
                 if (result.Succeeded)
                 {
                     //return RedirectToLocal(returnUrl);
-                    ApplicationUser user = await GetCurrentUserAsync();
-                    return new JsonResult(user);
+                    ApplicationUser user = await _userManager.FindByNameAsync(model.UserID);
+                     return await GetUserInfo(user);
                 }
                 if (result.RequiresTwoFactor)
                 {
@@ -90,12 +152,11 @@ namespace WebApp.Controllers
                 else
                 {
                     ModelState.AddModelError(string.Empty, "Invalid login attempt.");
-                    return View(model);
                 }
             }
 
             // If we got this far, something failed, redisplay form
-            return View(model);
+            return BadRequestJsonResult(ModelState.Values.SelectMany(x => x.Errors));
         }
 
         /*
@@ -108,18 +169,60 @@ namespace WebApp.Controllers
             return View();
         }*/
 
+        [HttpGet]
+        public IActionResult NextAccountID()
+        {
+            var newID = IDGenerator.GetMemberIDGenerator(this._applicationDbContext).GetNext();
+            return new JsonResult(new { NextAccountID = newID ?? ""});
+        }
+
+
         //
         // POST: /Account/Register
         [HttpPost]
         [AllowAnonymous]
-        [ValidateAntiForgeryToken]
+       // [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
             EnsureDatabaseCreated(_applicationDbContext);
             if (ModelState.IsValid)
             {
-                var user = new ApplicationUser { UserName = model.UserID, Email = model.UserID };
-                var result = await _userManager.CreateAsync(user, model.Password);
+                Member menberReference = null;
+                string refID = model.ReferenceID;
+                if (String.IsNullOrWhiteSpace(refID)) {
+                    var adminUser = (await _userManager.GetUsersInRoleAsync("Administrator")).FirstOrDefault();
+                    if (adminUser != null) {
+                        refID = adminUser.UserName;
+                    }
+                }
+
+                if (String.IsNullOrWhiteSpace(refID) == false) {
+                    menberReference = (from m in this._applicationDbContext.Members
+                                          where m.MemberID.Equals(refID) 
+                                          select m 
+                                       ).FirstOrDefault();
+                }
+
+                var member = new Member {
+                    MemberID = model.AccountID,
+                    Reference = menberReference,
+                    Name = model.Name,
+                    IDCard = model.CardID,
+                    Address = model.Address,
+                    Level = model.Level
+                };
+
+                var user = new ApplicationUser
+                {
+                    Id = model.AccountID,
+                    UserName = model.AccountID,
+                    MemberInfo = member,
+                    PhoneNumber = model.Phone
+                };
+
+                this._applicationDbContext.Members.Add(member);
+
+                var result = await _userManager.CreateAsync(user, ApplicationUser.IINT_PASSWORD);
                 if (result.Succeeded)
                 {
                     // For more information on how to enable account confirmation and password reset please visit http://go.microsoft.com/fwlink/?LinkID=532713
@@ -128,27 +231,131 @@ namespace WebApp.Controllers
                     //var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code }, protocol: Context.Request.Scheme);
                     //await _emailSender.SendEmailAsync(model.Email, "Confirm your account",
                     //    "Please confirm your account by clicking this link: <a href=\"" + callbackUrl + "\">link</a>");
-                    await _signInManager.SignInAsync(user, isPersistent: false);
+                    //await _signInManager.SignInAsync(user, isPersistent: false);
                     //return RedirectToAction(nameof(HomeController.Index), "Home");
                     return new JsonResult("OK");
                 }
                 AddErrors(result);
             }
-
-            // If we got this far, something failed, redisplay form
-            return View(model);
+            
+            return BadRequestJsonResult(ModelState.Values.SelectMany(x => x.Errors));
         }
 
         //
         // POST: /Account/LogOff
         [HttpPost]
-        [ValidateAntiForgeryToken]
+        //[ValidateAntiForgeryToken]
         public IActionResult LogOff()
         {
             _signInManager.SignOut();
             return RedirectToAction(nameof(HomeController.Index), "Home");
         }
 
+        //
+        // POST: /Account/LogOff
+        [HttpPost]
+        //[ValidateAntiForgeryToken]
+        public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var result = await _userManager.ChangePasswordAsync(await GetCurrentUserAsync(), model.OldPassword, model.NewPassword);
+                if (result.Succeeded)
+                {
+                    var user = await GetCurrentUserAsync();
+                    user.ChangedPassword = true;
+                    var updateUserResult = await _userManager.UpdateAsync(user);
+                    if (result.Succeeded) {
+                        return Json("OK");
+                    }
+                    else
+                    {
+                        return BadRequestJsonResult(updateUserResult.Errors);
+                    }
+                }
+                else
+                {
+                    return BadRequestJsonResult(result.Errors);
+                }
+            }
+            return BadRequestJsonResult(ModelState.Values.SelectMany(x => x.Errors));
+        }
+
+        private JsonResult BadRequestJsonResult(object value) {
+            JsonResult r = new JsonResult(value);
+            r.StatusCode =(int)HttpStatusCode.BadRequest;
+            return r;
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> FindMember(FindMemberViewModel model) {
+            if (ModelState.IsValid)
+            {
+                var result = from u in _applicationDbContext.Users
+                             join m in _applicationDbContext.Members
+                             on u.UserName equals m.MemberID
+                             select new MemberInfoModel
+                             {
+                                 MemberID = m.MemberID,
+                                 ReferenceID = m.ReferenceMemberID,
+                                 Name = m.Name,
+                                 IDCard = m.IDCard,
+                                 Address = m.Address,
+                                 Phone = u.PhoneNumber,
+                                 Level = m.Level
+                             };
+
+                if (string.IsNullOrWhiteSpace(model.MemberID) == false) {
+                    result = result.Where(
+                        m =>  m.MemberID != null 
+                              && m.MemberID.StartsWith(model.MemberID, StringComparison.InvariantCultureIgnoreCase));
+                }
+                
+                if (string.IsNullOrWhiteSpace(model.ReferenceID) == false)
+                {
+                    result = result.Where(m => m.ReferenceID != null && m.ReferenceID.StartsWith(model.ReferenceID, 
+                                                                        StringComparison.InvariantCultureIgnoreCase));
+                }
+                if (string.IsNullOrWhiteSpace(model.Name) == false)
+                {
+                    result = result.Where(m => m.Name != null && m.Name.IndexOf(model.Name) > -1);
+                }
+
+                if (string.IsNullOrWhiteSpace(model.IDCard) == false)
+                {
+                    result = result.Where(
+                        m => m.IDCard != null && m.IDCard.StartsWith(model.IDCard, 
+                                                     StringComparison.InvariantCultureIgnoreCase));
+                }
+
+                if (string.IsNullOrWhiteSpace(model.Phone) == false)
+                {
+                    result = result.Where(
+                        m => m.Phone != null && m.Phone.StartsWith(model.Phone, 
+                                                                    StringComparison.InvariantCultureIgnoreCase));
+                }
+       
+               int size = await result.CountAsync();
+
+                    /*
+                result = result.OrderByDescending(u=> u.MemberInfo.RegisterDate)
+                                .Skip(model.page * model.PageSize).Take(model.PageSize);*/
+
+              var items = result.ToList();
+
+                return Json(new
+                {
+                    TotalSize = size,
+                    Members = items
+                });
+           
+            }
+            return BadRequestJsonResult(ModelState.Values.SelectMany(x => x.Errors));
+
+        }
+
+
+        /*
         //
         // POST: /Account/ExternalLogin
         [HttpPost]
@@ -162,7 +369,8 @@ namespace WebApp.Controllers
             var properties = _signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
             return new ChallengeResult(provider, properties);
         }
-
+        
+        
         //
         // GET: /Account/ExternalLoginCallback
         [HttpGet]
@@ -199,6 +407,7 @@ namespace WebApp.Controllers
             }
         }
 
+        
         //
         // POST: /Account/ExternalLoginConfirmation
         [HttpPost]
@@ -311,6 +520,7 @@ namespace WebApp.Controllers
             return code == null ? View("Error") : View();
         }
 
+
         //
         // POST: /Account/ResetPassword
         [HttpPost]
@@ -345,6 +555,7 @@ namespace WebApp.Controllers
         {
             return View();
         }
+        */
 
         //
         // GET: /Account/SendCode
@@ -455,11 +666,12 @@ namespace WebApp.Controllers
         // when publishing your application.
         private static void EnsureDatabaseCreated(ApplicationDbContext context)
         {
+            /*
             if (!_databaseChecked)
             {
                 _databaseChecked = true;
                 context.Database.AsRelational().ApplyMigrations();
-            }
+            }*/
         }
 
         private void AddErrors(IdentityResult result)

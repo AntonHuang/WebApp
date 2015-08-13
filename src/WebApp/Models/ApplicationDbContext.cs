@@ -26,16 +26,21 @@ namespace WebApp.Models
             modelBuilder.Entity<Member>().Key(e => e.MemberID);
             modelBuilder.Entity<Member>().Property(e => e.MemberID)
                         .StoreGeneratedPattern(StoreGeneratedPattern.None);
-            modelBuilder.Entity<Member>().Reference<ApplicationUser>()
-                            .InverseReference(appUser => appUser.MemberInfo);
+
+            modelBuilder.Entity<ApplicationUser>()
+                .Reference<Member>(appUser => appUser.MemberInfo).InverseReference();
 
             //one to many relationship
-            modelBuilder.Entity<Member>().Reference<Member>()
-                            .InverseCollection(m => m.Candidates);
+            modelBuilder.Entity<Member>(buildAction => {
+                buildAction.Reference<Member>(m => m.Reference)
+                                .InverseCollection(m => m.Candidates);
+            });
+            
 
 
             modelBuilder.Entity<ApplicationUser>()
                 .Property(appUser => appUser.ChangedPassword).DefaultValue<bool>(0);
+
 
 
         }

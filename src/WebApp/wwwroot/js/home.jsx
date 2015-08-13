@@ -5,10 +5,30 @@ var Actions = Actions || require("./Actions.js");
 var AccountStore = require("./store/Account.js");
 
 
-var userInfo = React.createClass({
-    getInitialState: function() {
+var MemberInfo = React.createClass({
+
+    render: function () {
+
+        if (!this.props.user || !this.props.user.ID) {
+            return (<span>请先登录</span>);
+        }
+
+        return (
+            <div className="row">
+                <h4>{this.props.user.Name}</h4>
+                <span>{this.props.user.Level}</span>
+                <span>{this.props.user.RegisterDate}</span> 
+                入会
+            </div>
+        );
+    }
+});
+
+var Home = React.createClass({
+
+    getInitialState: function () {
         return { currentUser: AccountStore.getCurrentUser() };
-     },
+    },
 
     onStatusChange: function (user) {
         this.setState({
@@ -29,22 +49,13 @@ var userInfo = React.createClass({
     },
 
     render: function () {
-        if (!this.state.currentUser || !this.state.currentUser.ID) {
-            return (<div></div>);
-        }else{
-            return (
-                 <ul className="nav navbar-nav navbar-right">
-                     <li><a href="#Account/changePassword">修改密码</a></li>
-                    <li><a href="#Account/login" onClick={this.logout}>退出系统</a></li>
-                 </ul>
-            );
-        }
+        return (
+           <MemberInfo user={this.state.currentUser} />
+        );
     }
 });
 
 
-
-
 if (typeof exports === "object" && typeof module !== "undefined") {
-    module.exports = userInfo;
+    module.exports = Home;
 }

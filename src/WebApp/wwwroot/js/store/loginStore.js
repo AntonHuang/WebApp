@@ -12,7 +12,7 @@ var loginStore = Reflux.createStore({
     },
 
     login: function (userName, userPassword, remember){
-        var requestData = { Email: userName, Password: userPassword, RememberMe: remember };
+        var requestData = { UserID: userName, Password: userPassword, RememberMe: remember };
         $.ajaxAntiForgery({
             type: "POST",
             url: "/Account/Login",

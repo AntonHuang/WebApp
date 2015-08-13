@@ -10,21 +10,27 @@ namespace WebApp.DomainModels.Member
         public Member()
         {
             Candidates = new HashSet<Member>();
+            RegisterDate = DateTime.Now;
+            LastModifyDate = DateTime.Now;
         }
 
         public string MemberID { get; set; }
         public string Name { get; set; }
         public string Level { get; set; }
         public string Address { get; set; }
-
+        //public Sex? Sex { get; set; }
+        public string IDCard { get; set; }
+        //public string Phone { get; set; }
 
         public string TransactionPassword { get; set; }
         public DateTime RegisterDate { get; set; }
         public DateTime LastModifyDate { get; set; }
         public Member RegisterBy { get; set; }
 
-        public Member Reference { get; set; }
-        public ICollection<Member> Candidates { get; set; }
+        public string ReferenceMemberID { get; set; }
+
+        public virtual Member Reference { get; set; }
+        public virtual ICollection<Member> Candidates { get; set; }
     }
 
     public interface IMember<T>
@@ -38,12 +44,5 @@ namespace WebApp.DomainModels.Member
         Female,
         Male
     }
-
-    public class PersonalMember : Member
-    {
-        public Sex? Sex { get; set; }
-        public string IDCard { get; set; }
-    }
-
 
 }

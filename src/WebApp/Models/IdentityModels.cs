@@ -14,6 +14,7 @@ namespace WebApp.Models
     // Add profile data for application users by adding properties to the ApplicationUser class
     public class ApplicationUser : IdentityUser
     {
+        public static readonly string IINT_PASSWORD = "88888888"; 
         public bool ChangedPassword { get; set; }
         public virtual Member MemberInfo { get; set; }
     }
