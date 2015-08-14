@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace WebApp.DomainModels.Member
+namespace WebApp.DomainModels.Customer
 {
     public class MemberPoint
     {

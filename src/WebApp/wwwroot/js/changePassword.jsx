@@ -35,7 +35,7 @@ var changePassword = React.createClass({
         React.findDOMNode(this.refs.NewPassWCf).value = "";
     },
 
-    onChangePasswordError: function (errorObj) {
+    onChangePasswordFail: function (errorObj) {
         if (errorObj && errorObj[0]) {
             if (errorObj[0].Code) {
                 alert("错误：" + errorObj[0].Code);
@@ -49,7 +49,8 @@ var changePassword = React.createClass({
     },
 
     componentDidMount: function () {
-        this.listenTo(Actions.changePasswordError, this.onChangePasswordError);
+        this.listenTo(Actions.changePasswordFail, this.onChangePasswordFail);
+        //this.listenTo(Actions.changePasswordDone, this.onChangePasswordDone);
     },
 
     render: function () {

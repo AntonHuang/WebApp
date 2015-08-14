@@ -117,4 +117,5 @@ namespace WebApp.Models
         public string Address { get; set; }
         public string Level { get; set; }
     }
+
 }

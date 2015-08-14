@@ -7,7 +7,7 @@ using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.Data.Entity;
 using Microsoft.Data.Entity.Metadata;
 using Microsoft.Framework.OptionsModel;
-using WebApp.DomainModels.Member;
+using WebApp.DomainModels.Customer;
 
 namespace WebApp.Models
 {

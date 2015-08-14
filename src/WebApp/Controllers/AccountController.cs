@@ -15,7 +15,8 @@ using WebApp.Models;
 using WebApp.Services;
 using System.Net;
 using Microsoft.AspNet.Identity.EntityFramework;
-using WebApp.DomainModels.Member;
+using WebApp.DomainModels.Customer;
+using WebApp.Common;
 
 namespace WebApp.Controllers
 {
@@ -156,7 +157,7 @@ namespace WebApp.Controllers
             }
 
             // If we got this far, something failed, redisplay form
-            return BadRequestJsonResult(ModelState.Values.SelectMany(x => x.Errors));
+            return ErrorMessage.BadRequestJsonResult(ModelState.Values.SelectMany(x => x.Errors));
         }
 
         /*
@@ -170,9 +171,12 @@ namespace WebApp.Controllers
         }*/
 
         [HttpGet]
-        public IActionResult NextAccountID()
+        public async Task<IActionResult> NextAccountID()
         {
-            var newID = IDGenerator.GetMemberIDGenerator(this._applicationDbContext).GetNext();
+            var newID  = await Task.Run<string>(() => {
+                return IDGenerator.GetMemberIDGenerator(_applicationDbContext)
+                                    .GetNext();
+            } );
             return new JsonResult(new { NextAccountID = newID ?? ""});
         }
 
@@ -238,7 +242,7 @@ namespace WebApp.Controllers
                 AddErrors(result);
             }
             
-            return BadRequestJsonResult(ModelState.Values.SelectMany(x => x.Errors));
+            return ErrorMessage.BadRequestJsonResult(ModelState.Values.SelectMany(x => x.Errors));
         }
 
         //
@@ -270,22 +274,18 @@ namespace WebApp.Controllers
                     }
                     else
                     {
-                        return BadRequestJsonResult(updateUserResult.Errors);
+                        return ErrorMessage.BadRequestJsonResult(updateUserResult.Errors);
                     }
                 }
                 else
                 {
-                    return BadRequestJsonResult(result.Errors);
+                    return ErrorMessage.BadRequestJsonResult(result.Errors);
                 }
             }
-            return BadRequestJsonResult(ModelState.Values.SelectMany(x => x.Errors));
+            return ErrorMessage.BadRequestJsonResult(ModelState.Values.SelectMany(x => x.Errors));
         }
 
-        private JsonResult BadRequestJsonResult(object value) {
-            JsonResult r = new JsonResult(value);
-            r.StatusCode =(int)HttpStatusCode.BadRequest;
-            return r;
-        }
+        
 
         [HttpGet]
         public async Task<IActionResult> FindMember(FindMemberViewModel model) {
@@ -294,6 +294,7 @@ namespace WebApp.Controllers
                 var result = from u in _applicationDbContext.Users
                              join m in _applicationDbContext.Members
                              on u.UserName equals m.MemberID
+                             orderby m.RegisterDate descending
                              select new MemberInfoModel
                              {
                                  MemberID = m.MemberID,
@@ -337,9 +338,8 @@ namespace WebApp.Controllers
        
                int size = await result.CountAsync();
 
-                    /*
-                result = result.OrderByDescending(u=> u.MemberInfo.RegisterDate)
-                                .Skip(model.page * model.PageSize).Take(model.PageSize);*/
+              // paging
+               result = result.Skip(model.page * model.PageSize).Take(model.PageSize);
 
               var items = result.ToList();
 
@@ -350,10 +350,46 @@ namespace WebApp.Controllers
                 });
            
             }
-            return BadRequestJsonResult(ModelState.Values.SelectMany(x => x.Errors));
+            return ErrorMessage.BadRequestJsonResult(ModelState.Values.SelectMany(x => x.Errors));
 
         }
 
+        [HttpPost]
+        public async Task<IActionResult> ModifyMember(MemberInfoModel model) {
+            if (ModelState.IsValid)
+            {
+                var user = await _applicationDbContext.Users.
+                               Where(u => u.UserName.Equals(model.MemberID, StringComparison.InvariantCultureIgnoreCase))
+                            .SingleOrDefaultAsync();
+                var member = await _applicationDbContext.Members
+                               .Where(m => m.MemberID.Equals(model.MemberID, StringComparison.InvariantCultureIgnoreCase))
+                            .SingleOrDefaultAsync();
+
+                if (user != null || member != null) {
+                    if (user != null)
+                    {
+                        user.PhoneNumber = model.Phone;
+                    }
+
+                    if (member != null)
+                    {
+                        member.Address = model.Address;
+                        member.Level = model.Level;
+                    }
+
+                    try
+                    {
+                          await _applicationDbContext.SaveChangesAsync();
+                    }
+                    catch (Exception e)
+                    {
+                        return ErrorMessage.BadRequestJsonResult(e.Message);
+                    }
+                }
+                return Json("OK");
+            }
+            return ErrorMessage.BadRequestJsonResult(ModelState.Values.SelectMany(x => x.Errors));
+        }
 
         /*
         //

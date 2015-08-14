@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using WebApp.DomainModels.Member;
+using WebApp.DomainModels.Customer;
 
 namespace WebApp.Models
 {

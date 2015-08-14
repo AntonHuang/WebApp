@@ -13,6 +13,7 @@ using WebApp.Services;
 
 namespace WebApp.Controllers
 {
+    /*
     [Authorize]
     public class ManageController : Controller
     {
@@ -370,5 +371,5 @@ namespace WebApp.Controllers
         }
 
         #endregion
-    }
+    }*/
 }

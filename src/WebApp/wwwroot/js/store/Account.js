@@ -29,8 +29,8 @@ var accountStore = Reflux.createStore({
 
         this.listenTo(Actions.nextAccountID, this.onNextAccountID);
 
-        this.listenTo(Actions.nextAccountID, this.onNextAccountID);
         this.listenTo(Actions.findMember, this.onFindMember);
+        this.listenTo(Actions.modifyMember, this.onModifyMember);
     },
 
     getCurrentUser: function () {
@@ -150,7 +150,7 @@ var accountStore = Reflux.createStore({
                     console.debug(e);
                 }
             }
-            Actions.changePasswordError(jqxhr.appError);
+            Actions.changePasswordFail(jqxhr.appError);
         });
     },
 
@@ -209,8 +209,36 @@ var accountStore = Reflux.createStore({
         });
 
 
-    }
+    },
 
+    onModifyMember: function (accountID, address, phone, level) {
+        console.debug("do onModifyMember");
+        var requestData = {
+            MemberID: accountID,
+            Phone: phone,
+            Level: level,
+            Address: address
+        };
+        $.ajax({
+            type: "POST",
+            url: "/Account/ModifyMember",
+            data: requestData,
+            dataType: "json"
+        }).done(function (data) {
+            console.debug("onModifyMember done!", data);
+            Actions.modifyMemberDone(data);
+        }).fail(function (jqxhr, textStatus, errorThrown) {
+            if (/application\/json/.test(jqxhr.getResponseHeader('Content-Type'))) {
+                try {
+                    jqxhr.appError = $.parseJSON(jqxhr.responseText);
+                } catch (e) {
+                    console.debug(e);
+                }
+            }
+            Actions.modifyMemberFail(jqxhr.appError);
+        });
+
+    }
 
 });
 

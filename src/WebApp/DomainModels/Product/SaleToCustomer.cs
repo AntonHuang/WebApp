@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using WebApp.DomainModels.Customer;
 
 namespace WebApp.DomainModels.Product
 {
@@ -10,10 +11,10 @@ namespace WebApp.DomainModels.Product
     */
     public class SaleToCustomer
     {
-        public string ID { get; set; }
+        public int ID { get; set; }
 
-        public virtual ICustomer Customer {get;set;}
-        public virtual ISaleRepresentative Seller { get; set; }
+        public virtual Member Customer {get;set;}
+        public virtual Member SellingAgents { get; set; }
 
         public virtual ICollection<SaleToCustomerDetail> DetailItems { get; set; }
 
@@ -24,8 +25,14 @@ namespace WebApp.DomainModels.Product
 
     public class SaleToCustomerDetail
     {
-        public Amount Quantity { get; set; }
-        public virtual ProductDesc ProdectDesc { get; set; }
+        public SaleToCustomer Sale { get; set; }
+        
+        public virtual Mattress Prodect { get; set; }
+        
+        //public Amount Price { get; set; }
+
+        public string DeliveryAddress { get; set; }
+        public string Gifts { get; set; }
         public string State { get; set; }
     }
 

@@ -5,7 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using WebApp.DomainModels.Member;
+using WebApp.DomainModels.Customer;
+using WebApp.DomainModels.Product;
 
 namespace WebApp.Models
 {
@@ -14,6 +15,10 @@ namespace WebApp.Models
     {
 
         public virtual DbSet<Member> Members { get; set; }
+        public virtual DbSet<Mattress> Mattress { get; set; }
+        public virtual DbSet<ProductDesc> ProductDesc { get; set; }
+        public virtual DbSet<SaleToCustomer> SaleToCustomer { get; set; }
+        //public virtual DbSet<MemberPoint> MemberPoint { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -37,11 +42,19 @@ namespace WebApp.Models
             });
             
 
-
             modelBuilder.Entity<ApplicationUser>()
                 .Property(appUser => appUser.ChangedPassword).DefaultValue<bool>(0);
 
 
+            //one to many relationship
+            modelBuilder.Entity<Mattress>(buildAction => {
+                buildAction.Reference<ProductDesc>(m => m.TypeDesc).InverseCollection();
+            });
+
+            //one to many relationship
+            modelBuilder.Entity<SaleToCustomerDetail>(buildAction => {
+                buildAction.Reference<SaleToCustomer>(d => d.Sale).InverseCollection(s => s.DetailItems);
+            });
 
         }
     }
