@@ -4,19 +4,33 @@ var Reflux = Reflux || require("reflux");
 
 var modifyMember = React.createClass({
 
-    getInitialState: function () {
-
-        console.debug("getInitialState", this.state);
-
+    mixins: [Reflux.ListenerMixin],
+    /*
+    getDefaultProps: function () {
         return {
+            Member: {
                 MemberID: "",
                 Name: "",
                 ReferenceID: "",
                 Address: "",
                 Phone: "",
-                Level: "level1",
+                Level: "level0",
                 IDCard: ""
+            }
         }
+    },*/
+    
+    getInitialState: function () {
+        this.DefatulMember = {
+            MemberID: "",
+            Name: "",
+            ReferenceID: "",
+            Address: "",
+            Phone: "",
+            Level: "level0",
+            IDCard: ""
+        };
+        return { Member: this.DefatulMember };
     },
 
     onModifyMemberDone: function (data) {
@@ -27,43 +41,59 @@ var modifyMember = React.createClass({
         alert("修改会员信息出错！");
     },
 
-    componentWillMount: function () {
-        Actions.modifyMemberDone.listen(this.onModifyMemberDone);
-        Actions.modifyMemberFail.listen(this.onModifyMemberFail);
+    onSelectedModifyMember: function(selectedMember){
+        console.debug("onSelectedModifyMember this.isMounted()", this.isMounted(), selectedMember);
+
+        if(!this.isMounted()){
+            return;
+        }
+
+        if (selectedMember) {
+            this.setState({ Member: selectedMember });
+        } else {
+            this.setState({ Member: this.DefatulMember });
+        }
     },
 
-    componentDidMount: function () {
-        this.props.AccountID = this.refs.AccountID;
-        this.props.ReferenceID = this.refs.ReferenceID;
-        this.props.Name = this.refs.Name;
-        this.props.CardID = this.refs.CardID;
-        this.props.Address = this.refs.Address;
-        this.props.Phone = this.refs.Phone;
-        this.props.Level = this.refs.Level;
+    componentWillMount: function () {
+        this.listenTo(Actions.modifyMemberDone, this.onModifyMemberDone);
+        this.listenTo(Actions.modifyMemberFail, this.onModifyMemberFail);
+        this.listenTo(Actions.selectedModifyMember, this.onSelectedModifyMember);
     },
+
+/*
+    componentDidMount: function () {
+        this.AccountID = this.refs.AccountID;
+        this.ReferenceID = this.refs.ReferenceID;
+        this.Name = this.refs.Name;
+        this.CardID = this.refs.CardID;
+        this.Address = this.refs.Address;
+        this.Phone = this.refs.Phone;
+        this.Level = this.refs.Level;
+    },*/
 
     componentDidUpdate: function () {
-        console.debug("componentWillUpdate", this.state);
-        React.findDOMNode(this.props.AccountID).value = this.state.MemberID || "";
-        React.findDOMNode(this.props.ReferenceID).value = this.state.ReferenceID || "";
-        React.findDOMNode(this.props.Name).value = this.state.Name || "";
-        React.findDOMNode(this.props.CardID).value = this.state.IDCard || "";
-        React.findDOMNode(this.props.Address).value = this.state.Address || "";
-        React.findDOMNode(this.props.Phone).value = this.state.Phone || "";
-        React.findDOMNode(this.props.Level).value = this.state.Level || "";
+        //console.debug("componentDidUpdate", this.state.Member);
+        React.findDOMNode(this.refs.AccountID).value = this.state.Member.MemberID || "";
+        React.findDOMNode(this.refs.ReferenceID).value = this.state.Member.ReferenceID || "";
+        React.findDOMNode(this.refs.Name).value = this.state.Member.Name || "";
+        React.findDOMNode(this.refs.CardID).value = this.state.Member.IDCard || "";
+        React.findDOMNode(this.refs.Address).value = this.state.Member.Address || "";
+        React.findDOMNode(this.refs.Phone).value = this.state.Member.Phone || "";
+        React.findDOMNode(this.refs.Level).value = this.state.Member.Level || "";
     },
 
 
 
     handleSubmit: function (e) {
         e.preventDefault();
-        var accountID = this.state.MemberID;
-        // var referenceID = React.findDOMNode(this.props.ReferenceID).value.trim();
-        // var name = React.findDOMNode(this.props.Name).value.trim();
-        // var cardID = React.findDOMNode(this.props.CardID).value.trim();
-        var address = React.findDOMNode(this.props.Address).value.trim();
-        var phone = React.findDOMNode(this.props.Phone).value.trim();
-        var level = React.findDOMNode(this.props.Level).value.trim();
+        var accountID = this.state.Member.MemberID;
+        // var referenceID = React.findDOMNode(this.refs.ReferenceID).value.trim();
+        // var name = React.findDOMNode(this.refs.Name).value.trim();
+        // var cardID = React.findDOMNode(this.refs.CardID).value.trim();
+        var address = React.findDOMNode(this.refs.Address).value.trim();
+        var phone = React.findDOMNode(this.refs.Phone).value.trim();
+        var level = React.findDOMNode(this.refs.Level).value.trim();
 
         if (!accountID) {
             alert("请选择要修改的会员。");
@@ -87,13 +117,13 @@ var modifyMember = React.createClass({
                             <div className="col-md-3">
                                 <input className="form-control uneditable-input"
                                        id="AccountID" ref="AccountID"type="text" readOnly
-                                       defaultValue = {this.state.MemberID} />
+                                       defaultValue = {this.state.Member.MemberID} />
                             </div>
 
                             <label className="col-md-3 control-label" htmlFor="ReferenceID">推荐人ID号：</label>
                             <div className="col-md-3">
                                 <input className="form-control" id="ReferenceID" ref="ReferenceID"
-                                       type="text" readOnly defaultValue={this.state.ReferenceID} />
+                                       type="text" readOnly defaultValue={this.state.Member.ReferenceID} />
 
                             </div>
 
@@ -103,14 +133,14 @@ var modifyMember = React.createClass({
                              <label className="col-md-3 control-label" htmlFor="Name">姓名：</label>
                              <div className="col-md-3">
                                  <input className="form-control" id="Name" ref="Name" type="text"
-                                         readOnly defaultValue = {this.state.Name} />
+                                         readOnly defaultValue = {this.state.Member.Name} />
 
                              </div>
 
                             <label className="col-md-3 control-label" htmlFor="CardID">身份证号：</label>
                              <div className="col-md-3">
                                  <input className="form-control" id="CardID" ref="CardID" type="text"
-                                        readOnly defaultValue={this.state.IDCard} />
+                                        readOnly defaultValue={this.state.Member.IDCard} />
 
                              </div>
                         </div>
@@ -120,14 +150,14 @@ var modifyMember = React.createClass({
                               <label className="col-md-3 control-label" htmlFor="Address">联系地址：</label>
                               <div className="col-md-3">
                                   <input className="form-control" id="Address" ref="Address" type="text"
-                                           defaultValue = {this.state.Address}/>
+                                           defaultValue = {this.state.Member.Address}/>
 
                               </div>
 
                              <label className="col-md-3 control-label" htmlFor="Phone">电话：</label>
                               <div className="col-md-3">
                                   <input className="form-control" id="Phone" ref="Phone" type="text"
-                                         defaultValue={this.state.Phone} />
+                                         defaultValue={this.state.Member.Phone} />
 
                               </div>
                         </div>
@@ -137,7 +167,7 @@ var modifyMember = React.createClass({
                               <label className="col-md-3 control-label" htmlFor="Level">会员类别：</label>
                               <div className="col-md-3">
                                   <select className="form-control" id="Level" ref="Level"  
-                                          defaultValue = {this.state.Level} >
+                                          defaultValue = {this.state.Member.Level} >
                                     <option value="level0">普通会员</option>
                                     <option value="level1">高级会员</option>
                                   </select>

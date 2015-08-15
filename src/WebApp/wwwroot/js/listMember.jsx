@@ -39,6 +39,14 @@ var tablecolumsMeteData = [
 
 
 var listMember = React.createClass({
+    
+    mixins: [Reflux.ListenerMixin],
+
+    getDefaultProps: function () {
+        return {
+            memberTableUpdateID: "listMember" + Math.random()
+        }
+    },
 
     getInitialState: function () {
         return {
@@ -97,7 +105,8 @@ var listMember = React.createClass({
             tableData.maxPage = maxPage,
             //this.memberDataTable = this.memberDataTable || this.refs.memberDataTable;
             //this.memberDataTable.forceUpdate();
-            this.props.memberDataTable.setState(tableData);
+            // this.props.memberDataTable.setState(tableData);
+            Actions.updateTableData(this.props.memberTableUpdateID, tableData);
         }
     },
 
@@ -107,35 +116,38 @@ var listMember = React.createClass({
 
     onModifyMemberDone: function (data) {
         //this.props.memberDataTable = this.props.memberDataTable || this.refs.memberDataTable;
-        this.props.memberDataTable.setPage(
-            this.props.memberDataTable.state.page,
-            this.props.memberDataTable.state.pageSize);
+       // this.props.memberDataTable.setPage(
+        //    this.props.memberDataTable.state.page,
+       //     this.props.memberDataTable.state.pageSize);
+        Actions.refreshTableCuurentPage(this.props.memberTableUpdateID);
     },
 
     componentWillMount: function () {
-        Actions.findMemberDone.listen(this.onFindMemberDone);
-        Actions.findMemberFail.listen(this.onFindMemberFail);
-        Actions.modifyMemberDone.listen(this.onModifyMemberDone);
+        this.listenTo(Actions.findMemberDone,this.onFindMemberDone);
+        this.listenTo(Actions.findMemberFail,this.onFindMemberFail);
+        this.listenTo(Actions.modifyMemberDone, this.onModifyMemberDone);
 
         this.CurrentPage = 0;
         this.pageSize = 10;
     },
 
     componentDidMount: function () {
-        this.props.memberDataTable = this.refs.memberDataTable;
+        //this.props.memberDataTable = this.refs.memberDataTable;
 
-        this.props.FAccountID = this.refs.FAccountID;
-        this.props.FReferenceID = this.refs.FReferenceID;
-        this.props.FName = this.refs.FName;
-        this.props.FCardID = this.refs.FCardID;
-        this.props.FPhone = this.refs.FPhone;
+        this.FAccountID = this.refs.FAccountID;
+        this.FReferenceID = this.refs.FReferenceID;
+        this.FName = this.refs.FName;
+        this.FCardID = this.refs.FCardID;
+        this.FPhone = this.refs.FPhone;
     },
 
     onTableRowClick: function (rowD, e) {
         //console.debug("onTableRowClick", rowD, e);
-        if (typeof (this.props.onMemberTableRowClick) === 'function') {
-            this.props.onMemberTableRowClick(rowD.props.data);
-        }
+        //if (typeof (this.props.onMemberTableRowClick) === 'function') {
+        //    this.props.onMemberTableRowClick(rowD.props.data);
+       //  }
+
+        Actions.selectedModifyMember(rowD.props.data);
     },
 
     retrieveMembers: function (pageIdx, pageSize, filterData) {
@@ -144,11 +156,11 @@ var listMember = React.createClass({
             Actions.findMember(filterData.accountID, filterData.referenceID, filterData.name,
                 filterData.cardID, filterData.phone, pageIdx, pageSize);
         } else {
-            var accountID = React.findDOMNode(this.props.FAccountID).value.trim();
-            var referenceID = React.findDOMNode(this.props.FReferenceID).value.trim();
-            var name = React.findDOMNode(this.props.FName).value.trim();
-            var cardID = React.findDOMNode(this.props.FCardID).value.trim();
-            var phone = React.findDOMNode(this.props.FPhone).value.trim();
+            var accountID = React.findDOMNode(this.FAccountID).value.trim();
+            var referenceID = React.findDOMNode(this.FReferenceID).value.trim();
+            var name = React.findDOMNode(this.FName).value.trim();
+            var cardID = React.findDOMNode(this.FCardID).value.trim();
+            var phone = React.findDOMNode(this.FPhone).value.trim();
 
             this.state.lastFilterData = {
                 accountID: accountID,
@@ -166,6 +178,7 @@ var listMember = React.createClass({
         e.preventDefault();
         this.state.totalResults = 0;
         this.state.tableCallback = null;
+        Actions.selectedModifyMember(null);
         this.retrieveMembers(this.CurrentPage, this.pageSize);
 
     },
@@ -223,6 +236,7 @@ var listMember = React.createClass({
                                   columnMetadata={tablecolumsMeteData}
                                   getExternalResults={this.loadData} ref="memberDataTable"
                                   onRowClick={this.onTableRowClick}
+                                  tableUpdateID = {this.props.memberTableUpdateID }
                                   nextText="下一页"
                                   previousText="上一页" />
           </div>

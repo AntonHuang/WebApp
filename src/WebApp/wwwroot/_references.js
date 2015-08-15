@@ -6,5 +6,3 @@
 /// <reference path="js/routerstore.js" />
 /// <reference path="js/site.js" />
 /// <reference path="js/store/account.js" />
-/// <reference path="js/store/loginStore.js" />
-/// <reference path="js/store/registerstore.js" />

@@ -10,9 +10,10 @@ namespace WebApp.DomainModels.Product
     */
     public class ProductDesc
     {
-        public string ID;
-        public string Type;
-        public string Name;
-        public string Description;
+        public string ID { get; set; }
+        public string Type { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public decimal Price { get; set; }
     }
 }

@@ -5,20 +5,48 @@ var Actions = Reflux.createActions([
     "doLogin",
     "doLogout",
     "loadedUserInfo",
+
     "changePassword",
     "changePasswordDone",
     "changePasswordFail",
+
     "nextAccountID",
     "nextAccountIDDone",
     "nextAccountIDFail",
+
     "modifyMember",
     "modifyMemberDone",
     "modifyMemberFail",
+
     "register",
+    "registerDone",
+    "registerFail",
 
     "findMember",
     "findMemberDone",
-    "findMemberFail"
+    "findMemberFail",
+
+    "listMattressType",
+    "listMattressTypeDone",
+    "listMattressTypeFail",
+
+    "sellMattress",
+    "sellMattressDone",
+    "sellMattressFail",
+
+    "getPiontRule",
+    "getPiontRuleDone",
+    "getPiontRuleFail",
+
+    "modifyPiontRule",
+    "modifyPiontRuleDone",
+    "modifyPiontRuleFail",
+
+     "updateTableData",
+     "refreshTableCuurentPage",
+
+     "selectedModifyMember",
+     
 ]);
 
 if (typeof exports === "object" && typeof module !== "undefined") {

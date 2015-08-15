@@ -17,5 +17,21 @@ namespace WebApp.Models
 
     }
 
-    
+    public class SellMemberPointViewModel
+    {
+        public string MemberID { get; set; }
+        public string MemberLevel { get; set; }
+        public string MemberName { get; set; }
+        public decimal PointCount { get; set; }
+        public string Up1ID { get; set; }
+        public string Up1Level { get; set; }
+        public string Up1Name { get; set; }
+        public decimal Up1PointCount { get; set; }
+        public string Up2ID { get; set; }
+        public string Up2Level { get; set; }
+        public string Up2Name { get; set; }
+        public decimal Up2PointCount { get; set; }
+    }
+
+
 }

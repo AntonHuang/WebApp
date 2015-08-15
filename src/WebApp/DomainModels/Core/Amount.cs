@@ -9,12 +9,16 @@ namespace WebApp.DomainModels
     {
         public string Type
         {
-            get;
+            get; set;
         }
 
         public decimal ValueOfNumber
         {
-            get;
+            get; set;
+        }
+
+        public Amount() {
+
         }
 
         public Amount(string type)

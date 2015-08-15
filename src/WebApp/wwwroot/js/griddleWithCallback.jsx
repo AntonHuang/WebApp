@@ -1,8 +1,13 @@
 var React = require('react');
 var _ = require('underscore');
 var Griddle = require('griddle-react');
+var Reflux = Reflux || require("reflux");
+var Actions = Actions || require("./Actions.js");
+
 
 var GriddleWithCallback = React.createClass({
+    mixins: [Reflux.ListenerMixin],
+
     getDefaultProps: function () {
         return {
             getExternalResults: null,
@@ -25,6 +30,28 @@ var GriddleWithCallback = React.createClass({
 
         return initial;
     },
+    
+
+    onUpdateTableData: function (tableUpdateID, data) {
+        if (this.isMatchTableID(tableUpdateID)) {
+            this.setState(data);
+        }
+    },
+
+    onRefreshTableCuurentPage: function (tableUpdateID) {
+        if (this.isMatchTableID(tableUpdateID)) {
+            this.setPage(this.state.page, this.state.pageSize);
+        }
+    },
+    isMatchTableID: function(tableUpdateID){
+        return this.props.tableUpdateID && this.props.tableUpdateID === tableUpdateID;
+    },
+
+    componentWillMount: function () {
+        this.listenTo(Actions.updateTableData, this.onUpdateTableData);
+        this.listenTo(Actions.refreshTableCuurentPage, this.onRefreshTableCuurentPage);
+    },
+
     componentDidMount: function () {
         var state = this.state;
         state.pageSize = this.props.resultsPerPage;

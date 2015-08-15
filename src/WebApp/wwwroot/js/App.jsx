@@ -105,6 +105,9 @@ var Destination = React.createClass({
 
 var AddMember = require("./addMember.jsx");
 var UpdateMember = require("./updateMember.jsx");
+var SellMattress = require("./sellMattress.jsx");
+var PointExch = require("./pointExch.jsx");
+var PointRule = require("./pointRule.jsx");
 
 var routes = (
   <Route handler={App} path="/">
@@ -117,9 +120,9 @@ var routes = (
     <Route handler={Manage} name="manage">
        <Route name="addMember" path="addMember" handler={AddMember} />
        <Route name="updateMember" path="updateMember" handler={UpdateMember} />
-       <Route name="addMattress" path="addMattress" handler={Destination} />
+       <Route name="addMattress" path="addMattress" handler={SellMattress} />
        <Route name="pointExch" path="pointExch" handler={Destination} />
-       <Route name="pointRule" path="pointRule" handler={Destination} />
+       <Route name="pointRule" path="pointRule" handler={PointRule} />
     </Route>
   </Route>
 );

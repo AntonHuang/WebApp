@@ -11,29 +11,38 @@ namespace WebApp.DomainModels.Product
     */
     public class SaleToCustomer
     {
-        public int ID { get; set; }
+        public SaleToCustomer() {
+
+            CreateDate = DateTime.Now;
+            DetailItems = new HashSet<SaleToCustomerDetail>();
+        }
+
+        public string ID { get; set; }
 
         public virtual Member Customer {get;set;}
         public virtual Member SellingAgents { get; set; }
 
         public virtual ICollection<SaleToCustomerDetail> DetailItems { get; set; }
 
-        public DateTime DueDate { get; set; }
+        public DateTime DealDate { get; set; }
         public string State { get; set; }
+
+        public DateTime CreateDate { get; set; }
     }
 
 
     public class SaleToCustomerDetail
     {
-        public SaleToCustomer Sale { get; set; }
-        
+        public int ID { get; set; }
+
+        public virtual SaleToCustomer Sale { get; set; }
         public virtual Mattress Prodect { get; set; }
         
-        //public Amount Price { get; set; }
-
+        public decimal Price { get; set; }
         public string DeliveryAddress { get; set; }
         public string Gifts { get; set; }
         public string State { get; set; }
+
     }
 
 

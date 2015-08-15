@@ -31,6 +31,13 @@ var accountStore = Reflux.createStore({
 
         this.listenTo(Actions.findMember, this.onFindMember);
         this.listenTo(Actions.modifyMember, this.onModifyMember);
+
+        this.listenTo(Actions.sellMattress, this.onSellMattress);
+        this.listenTo(Actions.listMattressType, this.onListMattressType);
+
+        this.listenTo(Actions.getPiontRule, this.onGetPiontRule);
+        this.listenTo(Actions.modifyPiontRule, this.onModifyPiontRule);
+
     },
 
     getCurrentUser: function () {
@@ -121,10 +128,23 @@ var accountStore = Reflux.createStore({
             url: "/Account/Register",
             data: requestData,
             dataType: "json"
-        }).success(function () {
+        }).done(function (data) {
             console.debug("register done!");
             alert("添加成功！");
             RouterStore.get().transitionTo("manage");
+            Actions.registerDone(data);
+        }).fail(function (jqxhr, textStatus, errorThrown) {
+            if (/application\/json/.test(jqxhr.getResponseHeader('Content-Type'))) {
+                try {
+                    jqxhr.appError = $.parseJSON(jqxhr.responseText);
+                } catch (e) {
+                    console.debug(e);
+                }
+            }
+            if ("ReferenceID is not exist." === jqxhr.appError) {
+                alert("推荐人ID号不存在！")
+            }
+            Actions.registerFail(jqxhr.appError);
         });
     },
 
@@ -238,7 +258,100 @@ var accountStore = Reflux.createStore({
             Actions.modifyMemberFail(jqxhr.appError);
         });
 
+    },
+
+    onListMattressType: function () {
+        console.debug("do onlistMattressType");
+        $.ajax({
+            type: "GET",
+            url: "/Mattress/listMattressType",
+            dataType: "json"
+        }).done(function (data) {
+            console.debug("onlistMattressType done!");
+            Actions.listMattressTypeDone(data);
+        }).fail(function (jqxhr, textStatus, errorThrown) {
+            if (/application\/json/.test(jqxhr.getResponseHeader('Content-Type'))) {
+                try {
+                    jqxhr.appError = $.parseJSON(jqxhr.responseText);
+                } catch (e) {
+                    console.debug(e);
+                }
+            }
+            Actions.listMattressTypeFail(jqxhr.appError);
+        });
+    },
+
+    onSellMattress: function (MattressID, MattressTypeID, DeliveryAddress, CustomerID, SaleDate, Gifts) {
+        console.debug("do onSellMattress");
+        var self = this;
+        var requestData = {
+            MattressID: MattressID, 
+            MattressTypeID: MattressTypeID, 
+            DeliveryAddress: DeliveryAddress, 
+            CustomerID: CustomerID,
+            SaleDate: SaleDate,
+            Gifts: Gifts
+        };
+        $.ajax({
+            type: "POST",
+            url: "/Mattress/Sell",
+            data: requestData,
+            dataType: "json"
+        }).done(function (data) {
+            console.debug("onSellMattress done!", data);
+            Actions.sellMattressDone(data);
+        }).fail(function (jqxhr, textStatus, errorThrown) {
+            self.parseErrorJson(jqxhr);
+            Actions.sellMattressFail(jqxhr.appError);
+        });
+
+    },
+
+    onGetPiontRule: function () {
+        console.debug("do onGetPiontRule");
+        $.ajax({
+            type: "GET",
+            url: "/Setting/PointRule",
+            dataType: "json"
+        }).done(function (data) {
+            console.debug("onGetPiontRule done!");
+            Actions.getPiontRuleDone(data);
+        }).fail(function (jqxhr, textStatus, errorThrown) {
+            this.parseErrorJson(jqxhr);
+            Actions.getPiontRuleFail(jqxhr.appError);
+        });
+    },
+
+    onModifyPiontRule: function (ProintRule) {
+        console.debug("do onModifyPiontRule");
+        var requestData =  ProintRule  ;
+        $.ajax({
+            type: "POST",
+            url: "/Setting/PointRule",
+           // contentType: "application/json;charset=utf-8",
+            data: { pointRule: JSON.stringify(requestData || {}) },
+            dataType: "json"
+        }).done(function (data) {
+            console.debug("onModifyPiontRule done!", data);
+            Actions.modifyPiontRuleDone(data);
+        }).fail(function (jqxhr, textStatus, errorThrown) {
+            this.parseErrorJson(jqxhr);
+            Actions.modifyPiontRuleFail(jqxhr.appError);
+        });
+
+    },
+
+
+    parseErrorJson: function (jqxhr) {
+        if (/application\/json/.test(jqxhr.getResponseHeader('Content-Type'))) {
+            try {
+                jqxhr.appError = $.parseJSON(jqxhr.responseText);
+            } catch (e) {
+                console.debug(e);
+            }
+        }
     }
+
 
 });
 

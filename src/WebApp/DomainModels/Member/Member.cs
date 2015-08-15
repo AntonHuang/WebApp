@@ -9,9 +9,10 @@ namespace WebApp.DomainModels.Customer
     {
         public Member()
         {
-            Candidates = new HashSet<Member>();
             RegisterDate = DateTime.Now;
             LastModifyDate = DateTime.Now;
+            Candidates = new HashSet<Member>();
+            MemberPointItems = new HashSet<MemberPoint>();
         }
 
         public string MemberID { get; set; }
@@ -31,6 +32,8 @@ namespace WebApp.DomainModels.Customer
 
         public virtual Member Reference { get; set; }
         public virtual ICollection<Member> Candidates { get; set; }
+
+        public virtual ICollection<MemberPoint> MemberPointItems { get; set; }
     }
 
     public interface IMember<T>

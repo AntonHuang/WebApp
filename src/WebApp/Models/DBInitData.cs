@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using WebApp.DomainModels.Customer;
+using WebApp.DomainModels.Product;
 
 namespace WebApp.Models
 {
@@ -37,7 +38,7 @@ namespace WebApp.Models
                 {
                     CreateRoles().Wait();
                     CreateUsers().Wait();
-
+                    CreateProductDesc().Wait();
                 }
                 catch (Exception e)
                 {
@@ -105,6 +106,47 @@ namespace WebApp.Models
             //await userManager.AddClaimAsync(user, new Claim("ManageStore", "Allowed"));
         }
 
+        private async Task CreateProductDesc()
+        {
+            if (this.ctx.ProductDesc.Count() == 0)
+            {
+                ProductDesc[] items = {
+                        new ProductDesc{
+                                ID = "ID_1",
+                                Name = "床垫类型_1",
+                                Type = "TT1",
+                                Price = 888
+                            },
+                        new ProductDesc {
+                                ID = "ID_2",
+                                Name = "床垫类型_2",
+                                Type = "TT2",
+                                Price = 999
+                            },
+                        new ProductDesc {
+                                ID = "ID_3",
+                                Name = "床垫类型_3",
+                                Type = "TT1",
+                                Price = 2499
+                            },
+                        new ProductDesc {
+                                ID = "ID_4",
+                                Name = "床垫类型_4",
+                                Type = "TT2",
+                                Price = 5000
+                            },
+                        new ProductDesc {
+                                ID = "ID_5",
+                                Name = "床垫类型_5",
+                                Type = "TT6",
+                                Price = 1788
+                            }
 
+                };
+
+                this.ctx.ProductDesc.AddRange(items);
+                await this.ctx.SaveChangesAsync();
+            }
+        }
     }
 }

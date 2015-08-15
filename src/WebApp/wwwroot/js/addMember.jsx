@@ -4,9 +4,10 @@ var Reflux = Reflux || require("reflux");
 
 var addMember = React.createClass({
 
+    mixins: [Reflux.ListenerMixin],
+
     onNextAccountIDDone: function(data){
-        this.AccountID = this.AccountID || React.findDOMNode(this.refs.AccountID);
-        this.AccountID.value = data.NextAccountID;
+        this.AccountIDDom.value = data.NextAccountID;
     },
 
     onNextAccountIDFail: function () {
@@ -14,21 +15,31 @@ var addMember = React.createClass({
     },
 
     componentWillMount: function(){
-        Actions.nextAccountIDDone.listen(this.onNextAccountIDDone);
-        Actions.nextAccountIDFail.listen(this.onNextAccountIDFail);
+        this.listenTo(Actions.nextAccountIDDone,this.onNextAccountIDDone);
+        this.listenTo(Actions.nextAccountIDFail,this.onNextAccountIDFail);
 
         Actions.nextAccountID();
     },
 
+    componentDidMount: function () {
+        this.AccountIDDom = React.findDOMNode(this.refs.AccountID);
+        this.ReferenceIDDom = React.findDOMNode(this.refs.ReferenceID);
+        this.NameDom = React.findDOMNode(this.refs.Name);
+        this.CardIDDom = React.findDOMNode(this.refs.CardID);
+        this.AddressDom = React.findDOMNode(this.refs.Address);
+        this.PhoneDom = React.findDOMNode(this.refs.Phone);
+        this.LevelDom = React.findDOMNode(this.refs.Level);
+    },
+
     handleSubmit: function (e) {
         e.preventDefault();
-        var accountID = React.findDOMNode(this.refs.AccountID).value.trim();
-        var referenceID = React.findDOMNode(this.refs.ReferenceID).value.trim();
-        var name = React.findDOMNode(this.refs.Name).value.trim();
-        var cardID = React.findDOMNode(this.refs.CardID).value.trim();
-        var address = React.findDOMNode(this.refs.Address).value.trim();
-        var phone = React.findDOMNode(this.refs.Phone).value.trim();
-        var level = React.findDOMNode(this.refs.Level).value.trim();
+        var accountID = this.AccountIDDom.value.trim();
+        var referenceID = this.ReferenceIDDom.value.trim();
+        var name = this.NameDom.value.trim();
+        var cardID = this.CardIDDom.value.trim();
+        var address = this.AddressDom.value.trim();
+        var phone = this.PhoneDom.value.trim();
+        var level = this.LevelDom.value.trim();
         if (!accountID) {
             alert("会员ID不能留空！");
             return;
@@ -96,11 +107,10 @@ var addMember = React.createClass({
                       <div className="form-group">
                             <label className="col-md-3 control-label" htmlFor="Level">会员类别：</label>
                             <div className="col-md-3">
-                                <select className="form-control" id="Level" ref="Level" >
-                                  <option value="level0" selected>普通会员</option>
+                                <select className="form-control" id="Level" ref="Level" defaultValue = "level0" >
+                                  <option value="level0">普通会员</option>
                                   <option value="level1">高级会员</option>
                                 </select>
-                                
                             </div>
                       </div>
 

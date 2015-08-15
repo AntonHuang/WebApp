@@ -207,6 +207,10 @@ namespace WebApp.Controllers
                                        ).FirstOrDefault();
                 }
 
+                if (menberReference == null) {
+                    return ErrorMessage.BadRequestJsonResult("ReferenceID is not exist.");
+                }
+
                 var member = new Member {
                     MemberID = model.AccountID,
                     Reference = menberReference,

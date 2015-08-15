@@ -10,13 +10,13 @@ namespace WebApp.DomainModels.Product
     */
     public class ProductPrice
     {
-        public string PriceQty;
-        public string PriceUOM;
-        public string Status;
+        public string PriceQty { get; set; }
+        public string PriceUOM { get; set; }
+        public string Status { get; set; }
 
-        public ProductDesc Product;
-        public IPricer Pricer;
-        
+        public ProductDesc Product { get; set; }
+        public IPricer Pricer { get; set; }
+
     }
 
     /**

@@ -12,6 +12,8 @@ namespace WebApp.Models
         private DateTime lastDatePrefix;
 
         private static IDGenerator _memberIDGenerator;
+        private static IDGenerator _saleToCustomerIDGenerator;
+        private static IDGenerator _memberPointIDGenerator;
 
         public IDGenerator(string prefix, int nextIdx) {
             this.prefix = prefix;
@@ -79,7 +81,7 @@ namespace WebApp.Models
                 if (lastID.StartsWith(newPrefix)) {
                     int currIdx;
                     int.TryParse(lastID.Substring(newPrefix.Length), out currIdx);
-                    if(currIdx > 1)
+                    if(currIdx > 0)
                     {
                       g.SetNextIdx(currIdx + 1);
                     }
@@ -87,5 +89,48 @@ namespace WebApp.Models
             }
             return g;
         }
+
+        public static IDGenerator GetSaleToCustomerIDGenerator(ApplicationDbContext dbContext)
+        {
+            if (_saleToCustomerIDGenerator == null)
+            {
+                lock (typeof(IDGenerator))
+                {
+                    if (_saleToCustomerIDGenerator == null)
+                    {
+                        var lastMemberID = dbContext.SaleToCustomer
+                                           .OrderByDescending(m => m.CreateDate)
+                                           .Take(1)
+                                           .Select(m => m.ID)
+                                           .FirstOrDefault();
+                        _saleToCustomerIDGenerator = IDGenerator.CreateFromID(lastMemberID, "STC");
+                    }
+
+                }
+            }
+            return _saleToCustomerIDGenerator;
+        }
+
+        public static IDGenerator GetMemberPointIDGenerator(ApplicationDbContext dbContext)
+        {
+            if (_memberPointIDGenerator == null)
+            {
+                lock (typeof(IDGenerator))
+                {
+                    if (_memberPointIDGenerator == null)
+                    {
+                        var lastMemberID = dbContext.MemberPoint
+                                           .OrderByDescending(m => m.CreateDate)
+                                           .Take(1)
+                                           .Select(m => m.ID)
+                                           .FirstOrDefault();
+                        _memberPointIDGenerator = IDGenerator.CreateFromID(lastMemberID, "BEMP");
+                    }
+
+                }
+            }
+            return _memberPointIDGenerator;
+        }
+
     }
 }
