@@ -11,6 +11,7 @@ namespace WebApp.DomainModels.Product
         public DateTime RegisterDate { get; set; }
         public DateTime SaleDate { get; set; }
 
+        public string  TypeDescID { get; set; }
         public virtual ProductDesc TypeDesc { get; set; }
     }
 }

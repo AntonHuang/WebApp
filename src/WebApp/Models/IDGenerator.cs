@@ -120,7 +120,7 @@ namespace WebApp.Models
                     if (_memberPointIDGenerator == null)
                     {
                         var lastMemberID = dbContext.MemberPoint
-                                           .OrderByDescending(m => m.CreateDate)
+                                           .OrderByDescending(m => m.CreateDate )
                                            .Take(1)
                                            .Select(m => m.ID)
                                            .FirstOrDefault();

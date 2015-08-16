@@ -35,7 +35,7 @@ var tablecolumsMeteData = [
       "locked": false,
       "visible": true,
       "displayName": "推荐人会员ID"
-  }, ]
+  }, ];
 
 
 var listMember = React.createClass({
@@ -101,8 +101,8 @@ var listMember = React.createClass({
         if (typeof (this.state.tableCallback) === 'function') {
             this.state.tableCallback(tableData);
         } else {
-            tableData.page = page,
-            tableData.maxPage = maxPage,
+            tableData.page = page;
+            tableData.maxPage = maxPage;
             //this.memberDataTable = this.memberDataTable || this.refs.memberDataTable;
             //this.memberDataTable.forceUpdate();
             // this.props.memberDataTable.setState(tableData);

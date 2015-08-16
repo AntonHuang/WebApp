@@ -8,99 +8,102 @@ var pointExch = React.createClass({
 
     getInitialState: function () {
         return {
-            Today: this.today(),
-            MattressTypes: []
+            MemberPointInfo: null
         };
     },
 
-    onSellMattressDone: function (data) {
-        alert("添加成功！");
+    updateData: function (data) {
+        React.findDOMNode(this.refs.ExchAmount).value = "";
+        this.setState({ MemberPointInfo: data });
     },
 
-    onSellMattressFail: function (data) {
+    onMemberPointExchDone: function (data) {
+        console.debug("onMemberPointExchDone", data);
+        this.updateData(data);
+        alert("兑换成功！");
+    },
+
+    onMemberPointExchFail: function (data) {
         console.debug("onSellMattressFail", data);
-
+        this.updateData(data);
         var msg = "";
-        if ("MattressID is Exist." === data) {
-            msg = "床垫编号已经添加过了！";
-        } else if ("MattressTypeID is not Exist." === data) {
-            msg = "床垫型号不存在！";
-        } else if ("CustomerID is not Exist." === data) {
-            msg = "购买人ID号不存在！";
-        }
+        if ("MemberID is not Exist." === data) {
+            alert("无该会员ID信息！");
+            return;
+        } 
+       // else if ("MattressTypeID is not Exist." === data) {
+       //     msg = "床垫型号不存在！";
+       // } else if ("CustomerID is not Exist." === data) {
+       //     msg = "购买人ID号不存在！";
+       // }
 
-        alert("添加失败！" + msg);
+        alert("提取会员ID信息失败！" + msg);
+        
     },
 
-    onListMattressTypeDone: function (data) {
+    onRetrieveMemberPointInfoDone: function (data) {
         console.debug("onListMattressTypeDone", data);
-        if (!data || data.length == 0) {
-            alert("没找到床垫型号！");
-        }
-
-        this.setState({MattressTypes:data });
-
+        React.findDOMNode(this.refs.submitBtn).disabled = false;
+        this.updateData(data);
     },
 
-    onListMattressTypeFail: function (data) {
-        console.debug("onListMattressTypeFail", data);
-        alert("没找到床垫型号！");
+    onRetrieveMemberPointInfoFail: function (data) {
+        console.debug("onRetrieveMemberPointInfoFail", data);
+        React.findDOMNode(this.refs.submitBtn).disabled = false;
+        this.updateData(data);
+        if ("MemberID is not Exist." === data) {
+            alert("无该会员ID信息！");
+            return;
+        } 
+        alert("提取会员ID信息失败！");
+        
     },
 
     componentWillMount: function () {
-        this.listenTo(Actions.sellMattressDone, this.onSellMattressDone);
-        this.listenTo(Actions.sellMattressFail, this.onSellMattressFail);
-        this.listenTo(Actions.listMattressTypeDone, this.onListMattressTypeDone);
-        this.listenTo(Actions.listMattressTypeFail, this.onListMattressTypeFail);
-        Actions.listMattressType();
+        this.listenTo(Actions.memberPointExchDone, this.onMemberPointExchDone);
+        this.listenTo(Actions.memberPointExchFail, this.onMemberPointExchFail);
+        this.listenTo(Actions.retrieveMemberPointInfoDone, this.onRetrieveMemberPointInfoDone);
+        this.listenTo(Actions.retrieveMemberPointInfoFail, this.onRetrieveMemberPointInfoFail);
     },
 
-    today: function () {
-        var today = new Date();
-        var dd = today.getDate();
-        var mm = today.getMonth() + 1; //January is 0!
-        var yyyy = today.getFullYear();
-
-        if (dd < 10) {
-            dd = '0' + dd
-        }
-
-        if (mm < 10) {
-            mm = '0' + mm
-        }
-
-        return yyyy + '-' + mm + '-' + dd;
-    },
-
-    componentWillUpdate: function () {
-        this.state.Today = this.today();
+    onRetrieveMemberPointInfo(memberID){
+        React.findDOMNode(this.refs.submitBtn).disabled = true;
+        Actions.retrieveMemberPointInfo(memberID);
     },
 
     handleSubmit: function (e) {
         e.preventDefault();
-        var MattressID = React.findDOMNode(this.refs.MattressID).value.trim();
-        var MattressTypeID = React.findDOMNode(this.refs.MattressTypeID).value.trim();
-        var DeliveryAddress = React.findDOMNode(this.refs.DeliveryAddress).value.trim();
-        var CustomerID = React.findDOMNode(this.refs.CustomerID).value.trim();
-        var SaleDate = React.findDOMNode(this.refs.SaleDate).value.trim();
-        var Gifts = React.findDOMNode(this.refs.Gifts).value.trim();
+        var MemberID = React.findDOMNode(this.refs.MemberID).value.trim();
+        var ExchAmount = React.findDOMNode(this.refs.ExchAmount).value.trim();
 
-        if (!MattressID) {
-            alert("床垫编号不能留空！");
+        if (MemberID === "") {
+            alert("请输入会员ID号！");
+            return;
+        }
+        if (!this.state.MemberPointInfo
+            || this.state.MemberPointInfo.MemberID !== MemberID) {
+            this.onRetrieveMemberPointInfo(MemberID);
             return;
         }
 
-        if (!MattressTypeID) {
-            alert("床垫型号不能留空！");
+        ExchAmount = parseFloat(ExchAmount);
+        if(!ExchAmount){
+            alert("请输入要兑换积分数量！");
             return;
         }
 
-        if (!CustomerID) {
-            alert("购买人ID号不能留空！");
+        if( ExchAmount <= 0){
+            alert("兑换数值必须大于0！");
             return;
         }
 
-        Actions.sellMattress(MattressID, MattressTypeID, DeliveryAddress, CustomerID, SaleDate, Gifts);
+        if(this.state.MemberPointInfo.UsablePoint < ExchAmount ){
+            alert("兑换数值不能大于可兑换积分！");
+            return;
+        }
+        
+        this.state.MemberPointInfo.ExchAmount = ExchAmount;
+        Actions.memberPointExch(this.state.MemberPointInfo);
     },
 
     render: function () {
@@ -109,65 +112,67 @@ var pointExch = React.createClass({
             <div className="col-md-12">
                <section>
                   <form className="form-horizontal" method="post" role="form" onSubmit={this.handleSubmit}>
-                        <h4>添加床垫信息</h4>
+                        <h4>积分兑换</h4>
                         <hr />
                         <div className="text-danger"></div>
                         <div className="form-group">
-                            <label className="col-md-2 control-label" htmlFor="MattressID">床垫编号：</label>
+                            <label className="col-md-2 control-label" htmlFor="MemberID">会员ID号：</label>
                             <div className="col-md-4">
-                                <input className="form-control uneditable-input" type="text" autoFocus
-        id="MattressID" ref="MattressID"/>
-</div>
+                                <input className="form-control uneditable-input" type="text" 
+                                       autoFocus id="MemberID" ref="MemberID"/>
+                        </div>
+                        </div>
+                        <div className="form-group"> 
+                                <label className="col-md-2 control-label" htmlFor="MemberName">姓名：</label>
+                                <div className="col-md-4">
+                                    <input className="form-control" id="MemberName" ref="MemberName"
+                                           type="text" readOnly 
+                                           value={this.state.MemberPointInfo ? this.state.MemberPointInfo.MemberName : "" }/>
+                                </div>
+                                 <label className="col-md-2 control-label" htmlFor="IDCard">身份证号：</label>
+                                 <div className="col-md-4">
+                                     <input className="form-control" id="IDCard" ref="IDCard" 
+                                            type="text" readOnly
+                                            value={this.state.MemberPointInfo ? this.state.MemberPointInfo.IDCard : "" } />
+                                 </div>
 
-<label className="col-md-2 control-label" htmlFor="MattressTypeID">床垫型号：</label>
-<div className="col-md-4">
-    <select className="form-control" id="MattressTypeID" ref="MattressTypeID">
-        {this.state.MattressTypes.map(function(result) {
-            return <option value={result.ID} >{result.Name}</option>;
-        })}
-    </select>
-</div>
+                                
+                            </div>
 
-</div>
-<div className="form-group">
-         <label className="col-md-2 control-label" htmlFor="DeliveryAddress">送货地址：</label>
-         <div className="col-md-4">
-             <input className="form-control" id="DeliveryAddress" ref="DeliveryAddress" type="text" />
+                            <div className="form-group">
+                                <label className="col-md-2 control-label" htmlFor="PointTotal">总积分：</label>
+                                 <div className="col-md-4">
+                                     <input className="form-control" id="PointTotal" ref="PointTotal"
+                                            type="text" readOnly
+                                            value={this.state.MemberPointInfo ? this.state.MemberPointInfo.PointTotal : "" } />
+                                 </div>
 
-         </div>
+                                  <label className="col-md-2 control-label" htmlFor="UsablePoint">可兑换积分：</label>
+                                  <div className="col-md-4">
+                                      <input className="form-control" id="UsablePoint" ref="UsablePoint" type="text" readOnly
+                                value={this.state.MemberPointInfo ? this.state.MemberPointInfo.UsablePoint : "" } />
 
-        <label className="col-md-2 control-label" htmlFor="CustomerID">购买人ID号：</label>
-         <div className="col-md-4">
-             <input className="form-control" id="CustomerID" ref="CustomerID" type="text" />
-
-         </div>
-    </div>
-
-    <div className="form-group">
-          <label className="col-md-2 control-label" htmlFor="SaleDate">购买时间：</label>
-          <div className="col-md-4">
-              <input className="form-control" id="SaleDate" ref="SaleDate" type="date" 
-        defaultValue={this.state.Today} />
-
-</div>
-</div>
-<div className="form-group">
-    <label className="col-md-2 control-label" htmlFor="Gifts">赠送礼品：</label>
-      <div className="col-md-4">
-          <textarea className="form-control" id="Gifts" ref="Gifts" rows="3" />
-      </div>
-</div>
+                        </div>
+                        </div>
+                        <div className="form-group">
+                            <label className="col-md-2 control-label" htmlFor="ExchAmount">本次兑换积分：</label>
+                              <div className="col-md-4">
+                                  <input className="form-control" id="ExchAmount" ref="ExchAmount" type="text"
+                                          defaultValue={this.state.MemberPointInfo ? this.state.MemberPointInfo.ExchAmount : "0" } />
+                              </div>
+                        </div>
 
 
-  <div className="form-group">
-      <div className="col-md-offset-2 col-md-10">
-          <button type="submit" className="btn btn-default">保存</button>
-      </div>
-  </div>
-</form>
-</section>
-</div>
-</div>
+                          <div className="form-group">
+                              <div className="col-md-offset-2 col-md-4">
+                                  <button className="btn btn-default btn-block btn-primary" type="submit" 
+                                       id="submitBtn" ref="submitBtn" >兑换</button>
+                              </div>
+                          </div>
+                        </form>
+                        </section>
+            </div>
+            </div>
         );
     }
 });

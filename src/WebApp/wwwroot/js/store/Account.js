@@ -38,6 +38,11 @@ var accountStore = Reflux.createStore({
         this.listenTo(Actions.getPiontRule, this.onGetPiontRule);
         this.listenTo(Actions.modifyPiontRule, this.onModifyPiontRule);
 
+        this.listenTo(Actions.retrieveMemberPointInfo, this.onRetrieveMemberPointInfo);
+        this.listenTo(Actions.memberPointExch, this.onMemberPointExch);
+        
+        this.listenTo(Actions.findMemberPointDetail, this.onFindMemberPointDetail);
+
     },
 
     getCurrentUser: function () {
@@ -309,6 +314,7 @@ var accountStore = Reflux.createStore({
 
     onGetPiontRule: function () {
         console.debug("do onGetPiontRule");
+        var self = this;
         $.ajax({
             type: "GET",
             url: "/Setting/PointRule",
@@ -317,13 +323,14 @@ var accountStore = Reflux.createStore({
             console.debug("onGetPiontRule done!");
             Actions.getPiontRuleDone(data);
         }).fail(function (jqxhr, textStatus, errorThrown) {
-            this.parseErrorJson(jqxhr);
+            self.parseErrorJson(jqxhr);
             Actions.getPiontRuleFail(jqxhr.appError);
         });
     },
 
     onModifyPiontRule: function (ProintRule) {
         console.debug("do onModifyPiontRule");
+        var self = this;
         var requestData =  ProintRule  ;
         $.ajax({
             type: "POST",
@@ -335,14 +342,66 @@ var accountStore = Reflux.createStore({
             console.debug("onModifyPiontRule done!", data);
             Actions.modifyPiontRuleDone(data);
         }).fail(function (jqxhr, textStatus, errorThrown) {
-            this.parseErrorJson(jqxhr);
+            self.parseErrorJson(jqxhr);
             Actions.modifyPiontRuleFail(jqxhr.appError);
         });
 
     },
 
+    onRetrieveMemberPointInfo: function (memberID) {
+        console.debug("do onRetrieveMemberPointInfo");
+        var self = this;
+        $.ajax({
+            type: "GET",
+            url: "/Mattress/PointExch/" + memberID,
+            dataType: "json"
+        }).done(function (data) {
+            console.debug("onRetrieveMemberPointInfo done!");
+            Actions.retrieveMemberPointInfoDone(data);
+        }).fail(function (jqxhr, textStatus, errorThrown) {
+            self.parseErrorJson(jqxhr);
+            Actions.retrieveMemberPointInfoFail(jqxhr.appError || jqxhr.responseText);
+        });
+    },
+
+    onMemberPointExch: function (memberPoint) {
+        console.debug("do onMemberPointExch");
+        var self = this;
+        var requestData = memberPoint;
+        $.ajax({
+            type: "POST",
+            url: "/Mattress/PointExch",
+            data: requestData,
+            dataType: "json"
+        }).done(function (data) {
+            console.debug("onMemberPointExch done!", data);
+            Actions.memberPointExchDone(data);
+        }).fail(function (jqxhr, textStatus, errorThrown) {
+            self.parseErrorJson(jqxhr);
+            Actions.memberPointExchFail(jqxhr.appError || jqxhr.responseText);
+        });
+
+    },
+
+    onFindMemberPointDetail: function (memberID, page, pageSize) {
+        console.debug("do onFindMemberPointDetail");
+        var self = this;
+        $.ajax({
+            type: "GET",
+            url: "/Mattress/PointDetail/" + memberID + "/" + page + "/" + pageSize,
+            dataType: "json"
+        }).done(function (data) {
+            console.debug("onFindMemberPointDetail done!");
+            Actions.findMemberPointDetailDone(data);
+        }).fail(function (jqxhr, textStatus, errorThrown) {
+            self.parseErrorJson(jqxhr);
+            Actions.findMemberPointDetailFail(jqxhr.appError || jqxhr.responseText);
+        });
+
+    },
 
     parseErrorJson: function (jqxhr) {
+        console.debug("parseErrorJson Content-Type = ", jqxhr.getResponseHeader('Content-Type'));
         if (/application\/json/.test(jqxhr.getResponseHeader('Content-Type'))) {
             try {
                 jqxhr.appError = $.parseJSON(jqxhr.responseText);

@@ -2,99 +2,7 @@
 var Actions = Actions || require("./Actions.js");
 var Reflux = Reflux || require("reflux");
 
-
-var memberPointItem = React.createClass({
-
-    render: function () {
-        if (this.prop.MemberPoint) {
-            return (<div className="row">
-            <div className="col-md-12">
-               <label className="col-md-2 control-label" htmlFor="Name">姓名：</label>
-                <div className="col-md-2" >
-                     <input className="form-control uneditable-input" type="text" 
-                            id="Name" ref="Name" defaultValue = {this.props.MemberPoint.Name} />
-                </div>
-
-                <label className="col-md-2 control-label" htmlFor="MemberID">会员ID号：</label>
-                <div className="col-md-2">
-                     <input className="form-control uneditable-input" type="text"
-                            id="MemberID" ref="MemberID" defaultValue={this.props.MemberPoint.MemberID} />
-                </div>
-                <label className="col-md-2 control-label" htmlFor="Point">积分：</label>
-                <div className="col-md-2">
-                     <input className="form-control uneditable-input" type="text" 
-                            id="Point" ref="Point" defaultValue={this.props.MemberPoint.Point} />
-                </div></div></div>
-            );
-        }else{
-            return (<span></span>);
-        }
-
-    }
-
-});
-
-
-var saleMemberPoint = React.createClass({
-    componentWillUpdate: function () {
-        if (this.props && this.props.MemberPointItems) {
-            this.state.SelfMP = {
-                Name: this.props.MemberPointItems.MemberName || "",
-                MemberID: this.props.MemberPointItems.MemberID || "",
-                Point: this.props.MemberPointItems.PointCount ,
-            }
-            this.state.Up1MP = {
-                Name: this.props.MemberPointItems.Up1Name || "",
-                MemberID: this.props.MemberPointItems.Up1ID || "",
-                Point: this.props.MemberPointItems.Up1PointCount ,
-            }
-            this.state.Up2ID = {
-                Name: this.props.MemberPointItems.Up2Name || "",
-                MemberID: this.props.MemberPointItems.Up2ID || "",
-                Point: this.props.MemberPointItems.Up2PointCount ,
-            }
-        }
-    },
-
-    render: function () {
-        if (!this.props || !this.props.MemberPointItems) {
-            return (<span></span>);
-        }
-
-        return (
-    <div className="row">
-        <div className="col-md-12">
-            <section>
-                <hr />
-                <h5>积分信息</h5>
-                 <div className="form-group">
-                    <label className="col-md-2 control-label" htmlFor="MattressID">购买人积分信息：</label>
-                    <div className="col-md-10">
-                        <memberPointItem MemberPoint = {this.state.SelfMP }></memberPointItem>
-                    </div>
-                 </div>
-                <div className="form-group">
-                    <label className="col-md-2 control-label" htmlFor="MattressID">上一级积分信息：</label>
-                    <div className="col-md-10">
-                        <memberPointItem MemberPoint={this.state.Up1MP}></memberPointItem>
-                    </div>
-                </div>
-                <div className="form-group">
-                    <label className="col-md-2 control-label" htmlFor="MattressID">上两级积分信息：</label>
-                    <div className="col-md-10">
-                        <memberPointItem MemberPoint={this.state.Up2MP}></memberPointItem>
-                    </div>
-                </div>
-            </section>
-        </div>
-    </div>);
-    
-    }
-});
-
-
-
-var sellMattress = React.createClass({
+var SellMattress = React.createClass({
 
     mixins: [Reflux.ListenerMixin],
 
@@ -148,7 +56,7 @@ var sellMattress = React.createClass({
     },
 
     componentWillMount: function () {
-        this.listenTo(Actions.sellMattressDone, this.onSellMattressDone);
+        //this.listenTo(Actions.sellMattressDone, this.onSellMattressDone);
         this.listenTo(Actions.sellMattressFail, this.onSellMattressFail);
         this.listenTo(Actions.listMattressTypeDone, this.onListMattressTypeDone);
         this.listenTo(Actions.listMattressTypeFail, this.onListMattressTypeFail);
@@ -267,17 +175,13 @@ var sellMattress = React.createClass({
                   </form>
                </section>
 
-                <saleMemberPoint MemberPointItems={this.state.MemberPointItems}/>
+                
             </div>
           </div>
         );
     }
 });
 
-
-
-
-
 if (typeof exports === "object" && typeof module !== "undefined") {
-    module.exports = sellMattress;
+    module.exports = SellMattress;
 }

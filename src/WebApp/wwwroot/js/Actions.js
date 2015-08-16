@@ -42,6 +42,18 @@ var Actions = Reflux.createActions([
     "modifyPiontRuleDone",
     "modifyPiontRuleFail",
 
+    "retrieveMemberPointInfo",
+    "retrieveMemberPointInfoDone",
+    "retrieveMemberPointInfoFail",
+
+    "memberPointExch",
+    "memberPointExchDone",
+    "memberPointExchFail",
+
+    "findMemberPointDetail",
+    "findMemberPointDetailDone",
+    "findMemberPointDetailFail",
+
      "updateTableData",
      "refreshTableCuurentPage",
 

@@ -72,7 +72,7 @@ namespace WebApp.Controllers
                                       Name = member.Name ?? "",
                                       Level = GetLevelDisplayName(member.Level),
                                       Role = role ?? "",
-                                      RegisterDate = member.RegisterDate,
+                                      RegisterDate = member.RegisterDate.ToString("yyyy'-'MM'-'dd"),
                                       NeedToChangePassword = user.ChangedPassword == false
                                   }).FirstOrDefault();
                     if (menber == null)

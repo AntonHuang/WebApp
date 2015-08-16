@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -31,6 +32,19 @@ namespace WebApp.Models
         public string Up2Level { get; set; }
         public string Up2Name { get; set; }
         public decimal Up2PointCount { get; set; }
+    }
+
+    public class MemberPointInfoViewModel {
+
+        [Required]
+        public string MemberID { get; set; }
+        public string MemberName { get; set; }
+        public string IDCard { get; set; }
+
+        public decimal PointTotal { get; set; }
+        public decimal UsablePoint { get; set; }
+        public decimal ExchAmount { get; set; }
+
     }
 
 

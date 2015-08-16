@@ -13,23 +13,33 @@ namespace WebApp.DomainModels.Customer
 
         public string ID { get; set; }
 
+        public string OwnerMemberID { get; set; }
         public virtual Member Owner { get; set; }
         public decimal Quantity { get; set; }
+        public decimal CurrentTotalQuantity { get; set; }
         public string Type { get; set; }
         public string Describe { get; set; }
         public DateTime CreateDate { get; set; }
         public string State { get; set; }
+
+        public string OperationByMemberID { get; set; }
         public virtual Member OperationBy { get; set; }
 
         public DateTime DealDate { get; set; }
         public DateTime UseableDate { get; set; }
 
+        public string ProductID { get; set; }
         public virtual Mattress Product { get; set; }
+
+        public string ProductBuyerMemberID { get; set; }
         public virtual Member ProductBuyer { get; set; }
 
         public MemberPoint()
         {
+            Task.Delay(1);
             CreateDate = DateTime.Now;
+            DealDate = DateTime.Now;
+            UseableDate = DateTime.Today.Date;
             State = "New";
         }
 

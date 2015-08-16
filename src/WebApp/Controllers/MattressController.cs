@@ -141,7 +141,15 @@ namespace WebApp.Controllers
 
             return Json(new {
                     saleToCustomerID = saleToCustomer.ID,
-                    memberPointItems = pointItems
+                    memberPointItems = pointItems,
+                    sellMattressData = new {
+                        MattressID= mattress.ID,
+                        MattressTypeName= mattress.TypeDesc.Name,
+                        DeliveryAddress= saleToCustomerDetail.DeliveryAddress,
+                        CustomerID= saleToCustomer.Customer.MemberID,
+                        SaleDate= saleToCustomer.DealDate.Date.ToString("yyyy'-'MM'-'dd"),
+                        Gifts= saleToCustomerDetail.Gifts
+                    }
             });
         }
 
@@ -214,6 +222,10 @@ namespace WebApp.Controllers
                 menberPoint.UseableDate = pointRule.CalcAvailableDate(menberPoint.DealDate);
                 menberPoint.Quantity = pointRule.Calc(customers.MemberLevel, LevelRelation.Self, saleToCustomerDetail.Price);
                 menberPoint.ID = IDGenerator.GetMemberPointIDGenerator(this._applicationDbContext).GetNext();
+
+                var pointInfo = await GetMemberPointInfo(menberPoint.Owner.MemberID);
+                menberPoint.CurrentTotalQuantity = pointInfo.PointTotal;
+
                 this._applicationDbContext.MemberPoint.Add(menberPoint);
 
                 customers.PointCount = menberPoint.Quantity;
@@ -227,8 +239,11 @@ namespace WebApp.Controllers
                 menberPoint.Quantity = pointRule.Calc(customers.Up1Level,
                     LevelRelation.Son, saleToCustomerDetail.Price);
                 menberPoint.ID = IDGenerator.GetMemberPointIDGenerator(this._applicationDbContext).GetNext();
-                this._applicationDbContext.MemberPoint.Add(menberPoint);
 
+                var pointInfo = await GetMemberPointInfo(menberPoint.Owner.MemberID);
+                menberPoint.CurrentTotalQuantity = pointInfo.PointTotal;
+
+                this._applicationDbContext.MemberPoint.Add(menberPoint);
                 customers.Up1PointCount = menberPoint.Quantity;
             }
 
@@ -240,6 +255,10 @@ namespace WebApp.Controllers
                 menberPoint.Quantity = pointRule.Calc(customers.Up2Level,
                     LevelRelation.Grandson, saleToCustomerDetail.Price);
                 menberPoint.ID = IDGenerator.GetMemberPointIDGenerator(this._applicationDbContext).GetNext();
+
+                var pointInfo = await GetMemberPointInfo(menberPoint.Owner.MemberID);
+                menberPoint.CurrentTotalQuantity = pointInfo.PointTotal;
+
                 this._applicationDbContext.MemberPoint.Add(menberPoint);
 
                 customers.Up2PointCount = menberPoint.Quantity;
@@ -280,17 +299,17 @@ namespace WebApp.Controllers
                 if (r.Read()) {
                     var result= new SellMemberPointViewModel
                     {
-                        MemberID = r.GetString(0),
-                        MemberName = r.GetString(1),
-                        MemberLevel = r.GetString(2),
+                        MemberID = r.IsDBNull(0) ? "" : r.GetString(0),
+                        MemberName = r.IsDBNull(1) ? "" : r.GetString(1),
+                        MemberLevel = r.IsDBNull(2) ? "" : r.GetString(2),
 
-                        Up1ID = r.GetString(3),
-                        Up1Name = r.GetString(4),
-                        Up1Level = r.GetString(5),
+                        Up1ID = r.IsDBNull(3) ? "" : r.GetString(3),
+                        Up1Name = r.IsDBNull(4) ? "" : r.GetString(4),
+                        Up1Level = r.IsDBNull(5) ? "" : r.GetString(5),
 
-                        Up2ID = r.GetString(6),
-                        Up2Name = r.GetString(7),
-                        Up2Level = r.GetString(8),
+                        Up2ID = r.IsDBNull(6) ? "" : r.GetString(6),
+                        Up2Name = r.IsDBNull(7) ? "" : r.GetString(7),
+                        Up2Level = r.IsDBNull(8) ? "" : r.GetString(8),
                     };
 
                     r.Close();
@@ -327,6 +346,154 @@ namespace WebApp.Controllers
             return await _userManager.FindByIdAsync(Context.User.GetUserId());
         }
 
-        
+
+
+
+        [HttpGet]
+        public async Task<IActionResult> PointExch(string id)
+        {
+            if (ModelState.IsValid)
+            {
+                var memberInfo = await (from m in _applicationDbContext.Members
+                                        where m.MemberID.Equals(id, StringComparison.InvariantCultureIgnoreCase)
+                                        select m)
+                                        .FirstOrDefaultAsync();
+
+                if (memberInfo == null)
+                {
+                    return HttpNotFound("MemberID is not Exist.");
+                }
+
+                MemberPointInfoViewModel pointInfo = await GetMemberPointInfo(memberInfo.MemberID);
+
+                if (pointInfo == null)
+                {
+                    pointInfo = new MemberPointInfoViewModel
+                    {
+                        MemberID = memberInfo.MemberID,
+                        PointTotal = 0,
+                        UsablePoint = 0,
+                    };
+                }
+
+                pointInfo.IDCard = memberInfo.IDCard;
+                pointInfo.MemberName = memberInfo.Name;
+
+                return Json(pointInfo);
+            }
+            return ErrorMessage.BadRequestJsonResult(ModelState.Values.SelectMany(x => x.Errors));
+        }
+
+        private async Task<MemberPointInfoViewModel> GetMemberPointInfo(string memberID)
+        {
+           
+            return await (from m in _applicationDbContext.MemberPoint
+                          where m.OwnerMemberID.Equals(memberID, StringComparison.InvariantCultureIgnoreCase)
+                          group m by m.OwnerMemberID into memberGroup
+                          select new MemberPointInfoViewModel
+                          {
+                              MemberID = memberGroup.Key,
+                              PointTotal = memberGroup.Sum(item => item.Quantity),
+                              UsablePoint = memberGroup
+                                                .Where(item=>item.UseableDate <= DateTime.Today.Date)
+                                                .Sum(item => item.Quantity),
+                          })
+                          .FirstOrDefaultAsync();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> PointExch(MemberPointInfoViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                if (model.ExchAmount < 0) {
+                    return ErrorMessage.BadRequestJsonResult("ExchAmount must be greater than 0.");
+                }
+
+                MemberPointInfoViewModel pointInfo = await GetMemberPointInfo(model.MemberID);
+
+                if (pointInfo == null || pointInfo.UsablePoint < model.ExchAmount) {
+                    return ErrorMessage.BadRequestJsonResult("ExchAmount is greater than UsablePoint.");
+                }
+
+                MemberPoint exchPoint = new MemberPoint();
+                exchPoint.ID = IDGenerator.GetMemberPointIDGenerator(_applicationDbContext).GetNext();
+                exchPoint.OwnerMemberID = model.MemberID ;
+                exchPoint.Type = "PointExch";
+                exchPoint.OperationBy = new Member
+                {
+                    MemberID = (await this.GetCurrentUserAsync()).UserName
+                };
+                exchPoint.Quantity = -model.ExchAmount;
+                exchPoint.CurrentTotalQuantity = pointInfo.PointTotal;
+
+                this._applicationDbContext.MemberPoint.Add(exchPoint);
+                this._applicationDbContext.SaveChanges();
+
+
+                MemberPointInfoViewModel newPointInfo = await GetMemberPointInfo(model.MemberID);
+                newPointInfo.IDCard = model.IDCard;
+                newPointInfo.MemberName = model.MemberName;
+                return Json(newPointInfo);
+            }
+            return ErrorMessage.BadRequestJsonResult(ModelState.Values.SelectMany(x => x.Errors));
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> PointDetail(string id, int page, int pagesize)
+        {
+            if (ModelState.IsValid)
+            {
+                int totalSize = await (from mp in _applicationDbContext.MemberPoint
+                                       where  mp.OwnerMemberID.Equals(id, StringComparison.InvariantCultureIgnoreCase)
+                                                    && mp.Type.Equals("FromSale")
+                                       select mp.ID
+                                       ).CountAsync();
+                                      
+                if (totalSize == 0)
+                {
+                    return HttpNotFound("PointDetail is not Exist.");
+                }
+
+                var items = (from mp in _applicationDbContext.MemberPoint
+                             join c in _applicationDbContext.Members on mp.ProductBuyerMemberID equals c.MemberID
+                             join p in _applicationDbContext.Mattress on mp.ProductID equals p.ID
+                             join pDesc in _applicationDbContext.ProductDesc on p.TypeDescID equals pDesc.ID
+
+                             where mp.OwnerMemberID.Equals(id, StringComparison.InvariantCultureIgnoreCase)
+                             orderby mp.CreateDate descending
+                             select new
+                             {
+                                 ProductBuyerID = c.MemberID,
+                                 ProductBuyerReferenceID = c.ReferenceMemberID,
+                                 ProductBuyerName = c.Name,
+                                 ProductType = pDesc.Name,
+                                 DealDate = mp.DealDate,
+                                 CreateDate = mp.DealDate,
+                                 Point = mp.Quantity,
+                                 CurrentTotalPoint = mp.CurrentTotalQuantity
+                             });
+                var result = await items.Skip(pagesize * page).Take(pagesize).ToListAsync();
+
+                var newResult = (from item in result
+                                 select new {
+                                     ProductBuyerName = item.ProductBuyerName,
+                                     BuyerRelation = item.ProductBuyerID.Equals(id) ? "自己"
+                                                         : item.ProductBuyerReferenceID.Equals(id) ? "二级" : "三级",
+                                     ProductTypeName = item.ProductType,
+                                     DealDate = item.DealDate.ToString("yyyy'-'MM'-'dd"),
+                                     Point = item.Point,
+                                     CurrentTotalPoint = item.CurrentTotalPoint
+                                 }).ToList();
+
+                return Json(new
+                {
+                    TotalSize = totalSize,
+                    MemberPointItems = newResult
+                });
+            }
+            return ErrorMessage.BadRequestJsonResult(ModelState.Values.SelectMany(x => x.Errors));
+        }
+
     }
 }

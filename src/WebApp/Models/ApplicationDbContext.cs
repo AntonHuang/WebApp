@@ -41,7 +41,8 @@ namespace WebApp.Models
 
                 //one to many relationship
                 buildAction.Reference<Member>(m => m.Reference)
-                                .InverseCollection(m => m.Candidates);
+                                .InverseCollection(m => m.Candidates)
+                                .ForeignKey(m=>m.ReferenceMemberID);
             });
                   
 
@@ -56,7 +57,8 @@ namespace WebApp.Models
             //one to many relationship
             modelBuilder.Entity<Mattress>(buildAction => {
                 buildAction.Key(m => m.ID);
-                buildAction.Reference<ProductDesc>(m => m.TypeDesc).InverseCollection();
+                buildAction.Reference<ProductDesc>(m => m.TypeDesc)
+                            .InverseCollection().ForeignKey(m => m.TypeDescID);
             });
 
             //one to many relationship
@@ -71,16 +73,20 @@ namespace WebApp.Models
                 buildAction.Key(d => d.ID);
 
                 //one to many relationship
-                buildAction.Reference<Member>(mp => mp.Owner).InverseCollection(m => m.MemberPointItems);
+                buildAction.Reference<Member>(mp => mp.Owner).InverseCollection(m => m.MemberPointItems)
+                    .ForeignKey(m => m.OwnerMemberID);
 
                 //one to many relationship
-                buildAction.Reference<Member>(mp => mp.OperationBy).InverseCollection();
+                buildAction.Reference<Member>(mp => mp.OperationBy).InverseCollection()
+                    .ForeignKey(m => m.OperationByMemberID);
 
                 //one to many relationship
-                buildAction.Reference<Mattress>(mp => mp.Product).InverseCollection();
+                buildAction.Reference<Mattress>(mp => mp.Product).InverseCollection()
+                    .ForeignKey(m => m.ProductID);
 
                 //one to many relationship
-                buildAction.Reference<Member>(mp => mp.ProductBuyer).InverseCollection();
+                buildAction.Reference<Member>(mp => mp.ProductBuyer).InverseCollection()
+                    .ForeignKey(m => m.ProductBuyerMemberID);
 
             });
 
