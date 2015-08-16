@@ -4,6 +4,7 @@ var Actions = Actions || require("./Actions.js");
 
 var AccountStore = require("./store/Account.js");
 var MemberPointDetail = require("./memberPointDetail.jsx");
+var MemberRelation = require("./memberRelation.jsx");
 
 var MemberInfo = React.createClass({
 
@@ -84,6 +85,7 @@ var Home = React.createClass({
                    <MemberPointDetail MemberID={this.state.currentUser.ID} />
                    <hr />
                    <h4>线下成员</h4>
+                   <MemberRelation user={this.state.currentUser} />
                    <hr />
                      <div className="form-group">
                             <div className="col-md-offset-2 col-md-4">

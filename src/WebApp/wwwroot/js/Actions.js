@@ -54,6 +54,10 @@ var Actions = Reflux.createActions([
     "findMemberPointDetailDone",
     "findMemberPointDetailFail",
 
+    "retrieveMemberRelationInfo",
+    "retrieveMemberRelationInfoDone",
+    "retrieveMemberRelationInfoFail",
+
      "updateTableData",
      "refreshTableCuurentPage",
 

@@ -33,7 +33,7 @@ var login = React.createClass({
                         <div className="form-group">
                             <label className="col-md-2 control-label" htmlFor="AccountID">帐号</label>
                             <div className="col-md-10">
-                                <input className="form-control" id="AccountID" ref="AccountID" type="text" />
+                                <input className="form-control" id="AccountID" ref="AccountID" type="text" autoFocus />
                                 <span className="text-danger"></span>
                             </div>
                         </div>

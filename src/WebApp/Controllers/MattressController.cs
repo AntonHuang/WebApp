@@ -224,7 +224,11 @@ namespace WebApp.Controllers
                 menberPoint.ID = IDGenerator.GetMemberPointIDGenerator(this._applicationDbContext).GetNext();
 
                 var pointInfo = await GetMemberPointInfo(menberPoint.Owner.MemberID);
-                menberPoint.CurrentTotalQuantity = pointInfo.PointTotal;
+                if(pointInfo != null)
+                {
+                    menberPoint.CurrentTotalQuantity = pointInfo.PointTotal;
+                }
+                
 
                 this._applicationDbContext.MemberPoint.Add(menberPoint);
 
@@ -241,7 +245,10 @@ namespace WebApp.Controllers
                 menberPoint.ID = IDGenerator.GetMemberPointIDGenerator(this._applicationDbContext).GetNext();
 
                 var pointInfo = await GetMemberPointInfo(menberPoint.Owner.MemberID);
-                menberPoint.CurrentTotalQuantity = pointInfo.PointTotal;
+                if (pointInfo != null)
+                {
+                    menberPoint.CurrentTotalQuantity = pointInfo.PointTotal;
+                }
 
                 this._applicationDbContext.MemberPoint.Add(menberPoint);
                 customers.Up1PointCount = menberPoint.Quantity;
@@ -257,7 +264,10 @@ namespace WebApp.Controllers
                 menberPoint.ID = IDGenerator.GetMemberPointIDGenerator(this._applicationDbContext).GetNext();
 
                 var pointInfo = await GetMemberPointInfo(menberPoint.Owner.MemberID);
-                menberPoint.CurrentTotalQuantity = pointInfo.PointTotal;
+                if (pointInfo != null)
+                {
+                    menberPoint.CurrentTotalQuantity = pointInfo.PointTotal;
+                }
 
                 this._applicationDbContext.MemberPoint.Add(menberPoint);
 
@@ -495,5 +505,91 @@ namespace WebApp.Controllers
             return ErrorMessage.BadRequestJsonResult(ModelState.Values.SelectMany(x => x.Errors));
         }
 
+        [HttpGet]
+        public async Task<IActionResult> MemberRelationDetail(string id)
+        {
+            if (ModelState.IsValid)
+            {
+                /*
+                var children = await (from m1 in _applicationDbContext.Members
+                                       join m2 in _applicationDbContext.Members
+                                                on m1.MemberID equals m2.ReferenceMemberID
+                                       join m3 in _applicationDbContext.Members
+                                                on m2.MemberID equals m3.ReferenceMemberID into lefJ
+                                       from m4 in lefJ
+                                       where m1.MemberID.Equals(id, StringComparison.InvariantCultureIgnoreCase)
+                                       select new {
+                                           SonID = m2.MemberID,
+                                           SonName = m2.Name,
+                                           GrandSonID = m4.MemberID,
+                                           GrandSonName = m4.Name
+                                       }).ToListAsync();*/
+
+                var children = new List<MemberRelationViewModel>();
+                var connection = _applicationDbContext.Database.AsRelational().Connection;
+                var command = connection.DbConnection.CreateCommand();
+                command.CommandText = @"SELECT  m2.[MemberID] as sonID,  m2.[Name] as sonName,  m3.[MemberID] as grandsonID , m3.[Name] as grandsonName
+                  from Member as m1
+                  join Member as m2 on m1.MemberID = m2.ReferenceMemberID
+                  left join member as m3 on m2.MemberID = m3.ReferenceMemberID 
+                  where m1.MemberID = @CustomerID";
+
+                try
+                {
+                    DbParameter p = command.CreateParameter();
+                    p.DbType = System.Data.DbType.String;
+                    p.ParameterName = "CustomerID";
+                    p.Value = id == null ? "" : id;
+
+                    command.Parameters.Add(p);
+                    connection.Open();
+                    var r = command.ExecuteReader();
+                    while (r.Read())
+                    {
+                        children.Add(new MemberRelationViewModel
+                        {
+                            SonID = r.IsDBNull(0) ? "" : r.GetString(0),
+                            SonName = r.IsDBNull(1) ? "" : r.GetString(1),
+                            GrandSonID = r.IsDBNull(2) ? "" : r.GetString(2),
+                            GrandSonName = r.IsDBNull(3) ? "" : r.GetString(3)
+                        });
+                    }
+                    r.Close();
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                }
+                finally
+                {
+                    connection.Close();
+                }
+
+
+
+                var result = children.GroupBy(i => i.SonID).Select((g) => new
+                {
+                    ChildID = g.Key,
+                    ChildName = g.Select(a => a.SonName).FirstOrDefault(),
+                    children = g.Select(a => new {
+                        ChildID = a.GrandSonID,
+                        ChildName = a.GrandSonName
+                    }).Where(item => string.IsNullOrWhiteSpace(item.ChildID) == false ).ToList()
+                }).ToList();
+                
+                return Json(result);
+            }
+            return ErrorMessage.BadRequestJsonResult(ModelState.Values.SelectMany(x => x.Errors));
+        }
+
+    
+
+        private class MemberRelationViewModel
+        {
+            public string GrandSonID { get; set; }
+            public string GrandSonName { get; set; }
+            public string SonID { get; set; }
+            public string SonName { get; set; }
+        }
     }
 }

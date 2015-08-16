@@ -111,6 +111,12 @@ var MemberPointDetail = React.createClass({
     onFindMemberPointDetailFail: function (data) {
         console.debug("onFindMemberPointDetailFail", data);
         alert("查询出错！");
+        if (typeof (this.state.tableCallback) === 'function') {
+            this.state.tableCallback({
+                results: []
+            });
+        }
+       
     },
 
     onRetrieveMemberPointInfoDone: function (data) {
@@ -163,7 +169,7 @@ var MemberPointDetail = React.createClass({
                                            columns={tableColumns}
                                            columnMetadata={tablecolumsMeteData}
                                            getExternalResults={this.loadData}
-                                           tableUpdateID={this.props.pointItemTableUpdateID }
+                                           tableUpdateID={this.props.pointItemTableUpdateID}
                                            nextText="下一页"
                                            previousText="上一页" />
                  </div>

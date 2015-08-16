@@ -43,6 +43,8 @@ var accountStore = Reflux.createStore({
         
         this.listenTo(Actions.findMemberPointDetail, this.onFindMemberPointDetail);
 
+        this.listenTo(Actions.retrieveMemberRelationInfo, this.onRetrieveMemberRelationInfo);
+
     },
 
     getCurrentUser: function () {
@@ -396,6 +398,23 @@ var accountStore = Reflux.createStore({
         }).fail(function (jqxhr, textStatus, errorThrown) {
             self.parseErrorJson(jqxhr);
             Actions.findMemberPointDetailFail(jqxhr.appError || jqxhr.responseText);
+        });
+
+    },
+
+    onRetrieveMemberRelationInfo: function (memberID) {
+        console.debug("do onRetrieveMemberRelationInfo");
+        var self = this;
+        $.ajax({
+            type: "GET",
+            url: "/Mattress/MemberRelationDetail/" + memberID,
+            dataType: "json"
+        }).done(function (data) {
+            console.debug("onRetrieveMemberRelationInfo done!");
+            Actions.retrieveMemberRelationInfoDone(data);
+        }).fail(function (jqxhr, textStatus, errorThrown) {
+            self.parseErrorJson(jqxhr);
+            Actions.retrieveMemberRelationInfoFail(jqxhr.appError || jqxhr.responseText);
         });
 
     },

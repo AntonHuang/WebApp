@@ -38,8 +38,18 @@ var changePassword = React.createClass({
     onChangePasswordFail: function (errorObj) {
         if (errorObj && errorObj[0]) {
             if (errorObj[0].Code) {
+
+                if ("PasswordMismatch" == errorObj[0].Code) {
+                    alert("旧密码错误!");
+                    return;
+                }
+
                 alert("错误：" + errorObj[0].Code);
             } else if (errorObj[0].ErrorMessage) {
+                if ("The New password can not be same with OldPassword." == errorObj[0].ErrorMessage) {
+                    alert("新旧密码不能一致!");
+                }
+
                 alert("错误：" + errorObj[0].ErrorMessage);
             }
            
@@ -65,7 +75,7 @@ var changePassword = React.createClass({
                         <div className="form-group">
                             <label className="col-md-2 control-label" htmlFor="OldPassw">输入旧密码：</label>
                             <div className="col-md-10">
-                                <input className="form-control" id="OldPassw" ref="OldPassw" type="password" />
+                                <input className="form-control" id="OldPassw" ref="OldPassw" type="password" autoFocus />
                                 <span className="text-danger"></span>
                             </div>
                         </div>
