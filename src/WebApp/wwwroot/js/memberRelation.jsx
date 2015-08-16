@@ -5,6 +5,8 @@ var Actions = Actions || require("./Actions.js");
 var ReactBootstrap = require('react-bootstrap')
 var PanelGroup = ReactBootstrap.PanelGroup;
 var Panel = ReactBootstrap.Panel;
+var ButtonGroup = ReactBootstrap.ButtonGroup;
+var Button = ReactBootstrap.Button;
 
 var AccountStore = require("./store/Account.js");
 
@@ -62,16 +64,25 @@ var MemberRelation = React.createClass({
         }
 
         function showChild(item) {
-            return <input className ="btn" type="button" value={item.ChildName} />;
+            return <Button>{item.ChildName}</Button>;
+        }
+
+        function checkData(data) {
+            if(!data || data.length == 0){
+                return <p> -- 无 -- </p>;
+            }
         }
 
         return (
            <PanelGroup  accordion>
+               {checkData(this.state.RelationItems)}
                {this.state.RelationItems.map(function(item,idx){
                     if(item.children && item.children.length > 0){
-               return (<Panel header={item.ChildName} eventKey={idx+1}>{item.children? item.children.map(showChild) : "" }</Panel>);
+               return (<Panel header={item.ChildName} eventKey={idx+1}>
+                        <ButtonGroup>{item.children? item.children.map(showChild) : "" }</ButtonGroup>
+                       </Panel>);
                     }else{
-               return (<Panel header={item.ChildName} eventKey={idx+1} />);
+                        return (<Panel header={item.ChildName} eventKey={idx+1} />);
                     }
                     
                })}
