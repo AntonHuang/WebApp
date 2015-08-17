@@ -12,6 +12,9 @@ var source = require('vinyl-source-stream');
 var browserify = require('browserify');
 var watchify = require('watchify');
 var reactify = require('reactify');
+var streamify = require('gulp-streamify');
+var gutil = require('gulp-util');
+
 
 
 var paths = {
@@ -27,6 +30,7 @@ paths.concatCssDest = paths.webroot + "css/site.min.css";
 
 paths.entryPoint = paths.webroot + 'js/App.jsx';
 paths.buildJS = paths.webroot + 'js/build.js';
+paths.buildMinJS = paths.webroot + 'js/build.min.js';
 
 
 gulp.task('browserify', function () {
@@ -53,6 +57,19 @@ gulp.task('browserify', function () {
     .pipe(source(paths.buildJS))
     .pipe(gulp.dest('.'));
 });
+
+gulp.task('build', function () {
+    browserify({
+        entries: [paths.entryPoint],
+        transform: [reactify],
+    })
+      .bundle()
+      .pipe(source(paths.buildMinJS))
+      .pipe(streamify(uglify(paths.buildMinJS)))
+      .pipe(gulp.dest('.'))
+      .on('error', gutil.log);
+});
+
 
 
 gulp.task("clean:js", function (cb) {

@@ -506,7 +506,7 @@ namespace WebApp.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> MemberRelationDetail(string id)
+        public IActionResult MemberRelationDetail(string id)
         {
             if (ModelState.IsValid)
             {
